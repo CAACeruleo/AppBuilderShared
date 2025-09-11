@@ -1,6 +1,6 @@
 import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {BoxProps, Stack, Tabs} from "@mantine/core";
+import {BoxProps, ScrollArea, ScrollAreaProps, Stack, Tabs} from "@mantine/core";
 import React, {ReactElement, useEffect, useRef, useState} from "react";
 
 interface PropsTab extends BoxProps {
@@ -19,11 +19,23 @@ export interface ITabsComponentProps extends BoxProps {
 	defaultValue: string;
 	/** The tabs. */
 	tabs: PropsTab[];
+	/** Enable vertical scrolling in tab panels */
+	scrollableContent?: boolean;
+	/** Maximum height for tab content before scrolling */
+	contentMaxHeight?: string | number;
+	/** Fill available height in container and scroll when content exceeds */
+	fillAvailableHeight?: boolean;
+	/** Scroll area styling options */
+	scrollAreaProps?: ScrollAreaProps;
 }
 
 export default function TabsComponent({
 	defaultValue,
 	tabs,
+	scrollableContent = false,
+	contentMaxHeight = "400px",
+	fillAvailableHeight = false,
+	scrollAreaProps,
 	...rest
 }: ITabsComponentProps) {
 	const [activeTab, setActiveTab] = useState<string | null>(defaultValue);
@@ -47,10 +59,24 @@ export default function TabsComponent({
 		}
 	}, [tabNames.join(""), defaultValue]);
 
+	// Dynamic height calculation for fillAvailableHeight mode
+	const tabsStyle = fillAvailableHeight ? {
+		display: "flex",
+		flexDirection: "column" as const,
+		height: "100%"
+	} : {};
+
+	const tabsPanelStyle = fillAvailableHeight ? {
+		flex: 1,
+		display: "flex",
+		flexDirection: "column" as const,
+		minHeight: 0 // Important for flex children to shrink
+	} : {};
+
 	return tabs.length === 0 ? (
 		<></>
 	) : (
-		<Tabs {...rest} value={activeTab} onChange={handleActiveTabChange}>
+		<Tabs {...rest} value={activeTab} onChange={handleActiveTabChange} style={tabsStyle}>
 			<Tabs.List>
 				{tabs.map((tab, index) => {
 					const tabsTab = (
@@ -80,10 +106,28 @@ export default function TabsComponent({
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const {name, icon, children, ...rest} = tab;
 
+				const content = <Stack>{children}</Stack>;
+
 				return (
-					<Tabs.Panel {...rest} key={index} value={name}>
+					<Tabs.Panel {...rest} key={index} value={name} style={tabsPanelStyle}>
 						{activeTabsHistory.current.has(name) && (
-							<Stack>{children}</Stack>
+							scrollableContent ? (
+								<ScrollArea
+									h={fillAvailableHeight ? "100%" : contentMaxHeight}
+									scrollbarSize={8}
+									scrollHideDelay={1000}
+									style={fillAvailableHeight ? {
+										flex: 1, 
+										minHeight: 0,
+										height: "100%"
+									} : {}}
+									{...scrollAreaProps}
+								>
+									{content}
+								</ScrollArea>
+							) : (
+								content
+							)
 						)}
 					</Tabs.Panel>
 				);

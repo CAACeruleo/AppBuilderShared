@@ -117,7 +117,11 @@ export default function FloatingWidget(props: FloatingWidgetProps) {
             className={`${classes.floatingWidget} ${responsiveHide ? classes.responsiveHide : ''} ${className || ''}`}
             shadow={shadow}
             radius={radius}
-            style={containerStyle}
+            style={{
+                ...containerStyle,
+                display: "flex",
+                flexDirection: "column"
+            }}
             withBorder
         >
             {showHeader && (
@@ -152,10 +156,16 @@ export default function FloatingWidget(props: FloatingWidgetProps) {
                 </div>
             )}
             
-            <Collapse in={!collapsed}>
+            <Collapse in={!collapsed} style={collapsed ? {} : { flex: 1, display: "flex", flexDirection: "column" }}>
                 <div 
                     className={classes.floatingWidgetContent}
-                    style={{ padding: showHeader ? padding : `0 ${padding} ${padding} ${padding}` }}
+                    style={{ 
+                        padding: showHeader ? padding : `0 ${padding} ${padding} ${padding}`,
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        minHeight: 0
+                    }}
                 >
                     {children}
                 </div>

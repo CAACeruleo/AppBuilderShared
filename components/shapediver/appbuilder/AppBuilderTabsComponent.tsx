@@ -3,6 +3,7 @@ import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
 import {IAppBuilderTab} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {useProps} from "@mantine/core";
 import React, {useMemo} from "react";
 
 interface Props {
@@ -19,6 +20,9 @@ export default function AppBuilderTabsComponent({namespace, tabs}: Props) {
 	if (!tabs || tabs.length === 0) {
 		return <></>;
 	}
+
+	// Get theme props for TabsComponent
+	const themeProps = useProps("TabsComponent", {}, {});
 
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		return {
@@ -37,8 +41,9 @@ export default function AppBuilderTabsComponent({namespace, tabs}: Props) {
 					],
 				};
 			}),
+			...themeProps, // Apply theme properties
 		};
-	}, [namespace, tabs]);
+	}, [namespace, tabs, themeProps]);
 
 	return <TabsComponent {...tabProps} />;
 }

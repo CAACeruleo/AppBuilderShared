@@ -3,6 +3,8 @@
     transition: all 0.3s ease;
     overflow: hidden;
     min-width: 200px;
+    display: flex;
+    flex-direction: column;
 }
 
 .floatingWidgetHeader {
@@ -35,6 +37,10 @@
 
 .floatingWidgetContent {
     transition: padding 0.3s ease;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 /* Responsive behavior */
