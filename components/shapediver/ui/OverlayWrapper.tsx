@@ -89,9 +89,5 @@ export default function OverlayWrapper(
 		zIndex,
 	};
 
-	return (
-		<section style={overlayStyle}>
-			{children}
-		</section>
-	);
+	return <section style={overlayStyle}>{children}</section>;
 }

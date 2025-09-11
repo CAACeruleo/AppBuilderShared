@@ -15,7 +15,12 @@ export interface IAppBuilderContainerContext {
 }
 
 /** Types of templates */
-export type AppBuilderTemplateType = "appshell" | "grid" | "overlay" | "overlay-grid" | "unspecified";
+export type AppBuilderTemplateType =
+	| "appshell"
+	| "grid"
+	| "overlay"
+	| "overlay-grid"
+	| "unspecified";
 
 /** Contextual information for App Builder template. */
 export interface IAppBuilderTemplateContext {

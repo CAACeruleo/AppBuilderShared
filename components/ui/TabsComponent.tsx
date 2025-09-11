@@ -1,7 +1,13 @@
 import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {BoxProps, ScrollArea, ScrollAreaProps, Stack, Tabs} from "@mantine/core";
-import React, {ReactElement, useEffect, useRef, useState} from "react";
+import {
+	BoxProps,
+	ScrollArea,
+	ScrollAreaProps,
+	Stack,
+	Tabs,
+} from "@mantine/core";
+import React, {ReactElement, useEffect, useMemo, useRef, useState} from "react";
 
 interface PropsTab extends BoxProps {
 	/** Name (value) of tab. */
@@ -59,24 +65,54 @@ export default function TabsComponent({
 		}
 	}, [tabNames.join(""), defaultValue]);
 
-	// Dynamic height calculation for fillAvailableHeight mode
-	const tabsStyle = fillAvailableHeight ? {
-		display: "flex",
-		flexDirection: "column" as const,
-		height: "100%"
-	} : {};
+	// Memoized styles for performance
+	const tabsStyle = useMemo(
+		() =>
+			fillAvailableHeight
+				? {
+						display: "flex",
+						flexDirection: "column" as const,
+						height: "100%",
+						...rest.style,
+					}
+				: rest.style,
+		[fillAvailableHeight, rest.style],
+	);
 
-	const tabsPanelStyle = fillAvailableHeight ? {
-		flex: 1,
-		display: "flex",
-		flexDirection: "column" as const,
-		minHeight: 0 // Important for flex children to shrink
-	} : {};
+	const tabsPanelStyle = useMemo(
+		() =>
+			fillAvailableHeight
+				? {
+						flex: 1,
+						display: "flex",
+						flexDirection: "column" as const,
+						minHeight: 0, // Important for flex children to shrink
+					}
+				: {},
+		[fillAvailableHeight],
+	);
+
+	const scrollAreaStyle = useMemo(
+		() =>
+			fillAvailableHeight
+				? {
+						flex: 1,
+						minHeight: 0,
+						height: "100%",
+					}
+				: {},
+		[fillAvailableHeight],
+	);
 
 	return tabs.length === 0 ? (
 		<></>
 	) : (
-		<Tabs {...rest} value={activeTab} onChange={handleActiveTabChange} style={tabsStyle}>
+		<Tabs
+			{...rest}
+			value={activeTab}
+			onChange={handleActiveTabChange}
+			style={tabsStyle}
+		>
 			<Tabs.List>
 				{tabs.map((tab, index) => {
 					const tabsTab = (
@@ -109,26 +145,30 @@ export default function TabsComponent({
 				const content = <Stack>{children}</Stack>;
 
 				return (
-					<Tabs.Panel {...rest} key={index} value={name} style={tabsPanelStyle}>
-						{activeTabsHistory.current.has(name) && (
-							scrollableContent ? (
+					<Tabs.Panel
+						{...rest}
+						key={index}
+						value={name}
+						style={tabsPanelStyle}
+					>
+						{activeTabsHistory.current.has(name) &&
+							(scrollableContent ? (
 								<ScrollArea
-									h={fillAvailableHeight ? "100%" : contentMaxHeight}
+									h={
+										fillAvailableHeight
+											? "100%"
+											: contentMaxHeight
+									}
 									scrollbarSize={8}
 									scrollHideDelay={1000}
-									style={fillAvailableHeight ? {
-										flex: 1, 
-										minHeight: 0,
-										height: "100%"
-									} : {}}
+									style={scrollAreaStyle}
 									{...scrollAreaProps}
 								>
 									{content}
 								</ScrollArea>
 							) : (
 								content
-							)
-						)}
+							))}
 					</Tabs.Panel>
 				);
 			})}

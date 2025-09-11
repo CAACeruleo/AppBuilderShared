@@ -1,120 +1,120 @@
 .overlayGridTemplatePage {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    z-index: 0;
+	position: relative;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	z-index: 0;
 }
 
 .overlayGridTemplateMain {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* 3D viewer takes the full screen */
-    z-index: 1;
-    /* Remove any default background - let the 3D viewer show through */
-    background: transparent;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	/* 3D viewer takes the full screen */
+	z-index: 1;
+	/* Remove any default background - let the 3D viewer show through */
+	background: transparent;
 }
 
 .overlayGridContainer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: grid;
-    z-index: 100;
-    pointer-events: none; /* Allow clicks through empty grid areas */
-    /* Grid properties will be set via inline styles from createGridLayout */
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: grid;
+	z-index: 100;
+	pointer-events: none; /* Allow clicks through empty grid areas */
+	/* Grid properties will be set via inline styles from createGridLayout */
 }
 
 .overlayGridTop {
-    grid-area: top;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    pointer-events: none;
+	grid-area: top;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	pointer-events: none;
 }
 
 .overlayGridLeft {
-    grid-area: left;
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    pointer-events: none;
+	grid-area: left;
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-start;
+	pointer-events: none;
 }
 
 .overlayGridRight {
-    grid-area: right;
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-end;
-    pointer-events: none;
+	grid-area: right;
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-end;
+	pointer-events: none;
 }
 
 .overlayGridBottom {
-    grid-area: bottom;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    pointer-events: none;
+	grid-area: bottom;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	pointer-events: none;
 }
 
 .gridWidget {
-    pointer-events: auto; /* Re-enable pointer events for the actual widgets */
-    max-width: 100%;
-    max-height: 100%;
+	pointer-events: auto; /* Re-enable pointer events for the actual widgets */
+	max-width: 100%;
+	max-height: 100%;
 }
 
 /* Responsive behavior for grid layout */
 @media (max-width: 768px) {
-    .overlayGridContainer {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
-        grid-template-areas: 
-            "top"
-            "main" 
-            "bottom";
-        gap: 10px;
-        padding: 10px;
-    }
-    
-    .overlayGridLeft,
-    .overlayGridRight {
-        display: none; /* Hide side panels on mobile */
-    }
-    
-    .gridWidget {
-        min-height: auto;
-        max-height: 40vh;
-    }
+	.overlayGridContainer {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto 1fr auto;
+		grid-template-areas:
+			"top"
+			"main"
+			"bottom";
+		gap: 10px;
+		padding: 10px;
+	}
+
+	.overlayGridLeft,
+	.overlayGridRight {
+		display: none; /* Hide side panels on mobile */
+	}
+
+	.gridWidget {
+		min-height: auto;
+		max-height: 40vh;
+	}
 }
 
 @media (max-width: 1024px) and (min-width: 769px) {
-    .overlayGridContainer {
-        gap: 15px;
-        padding: 15px;
-    }
-    
-    .gridWidget {
-        font-size: 0.9em;
-    }
+	.overlayGridContainer {
+		gap: 15px;
+		padding: 15px;
+	}
+
+	.gridWidget {
+		font-size: 0.9em;
+	}
 }
 
 /* High contrast mode */
 @media (prefers-contrast: high) {
-    .gridWidget {
-        border: 2px solid;
-    }
+	.gridWidget {
+		border: 2px solid;
+	}
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    .gridWidget {
-        transition: none;
-    }
+	.gridWidget {
+		transition: none;
+	}
 }
 
 /* Focus management for grid areas */
@@ -122,5 +122,5 @@
 .overlayGridLeft:focus-within,
 .overlayGridRight:focus-within,
 .overlayGridBottom:focus-within {
-    z-index: 101;
+	z-index: 101;
 }
