@@ -54,6 +54,11 @@ interface Props {
 export interface OverlayStyleProps {
 	position: ResponsiveValueType<OverlayPositionType>;
 	offset?: string;
+	background?: string;
+	backdropFilter?: string;
+	borderRadius?: string;
+	padding?: string;
+	zIndex?: number;
 }
 
 export default function OverlayWrapper(
@@ -63,14 +68,29 @@ export default function OverlayWrapper(
 		children = <></>,
 		position: _position = OverlayPosition.TOP_LEFT,
 		offset,
+		background,
+		backdropFilter,
+		borderRadius,
+		padding,
+		zIndex = 100,
 	} = props;
 
 	const positionStyles = useMemo(() => getPositionStyles(offset), [offset]);
 
 	const position = useResponsiveValueSelector(_position);
 
+	const overlayStyle: React.CSSProperties = {
+		...positionStyles[position],
+		position: "absolute",
+		background,
+		backdropFilter,
+		borderRadius,
+		padding,
+		zIndex,
+	};
+
 	return (
-		<section style={{...positionStyles[position], position: "absolute"}}>
+		<section style={overlayStyle}>
 			{children}
 		</section>
 	);

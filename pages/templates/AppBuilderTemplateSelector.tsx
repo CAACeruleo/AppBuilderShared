@@ -1,12 +1,14 @@
 import {AppBuilderTemplateContext} from "@AppBuilderShared/context/AppBuilderContext";
 import AppBuilderAppShellTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import AppBuilderGridTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
+import AppBuilderOverlayTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderOverlayTemplatePage";
+import AppBuilderOverlayGridTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderOverlayGridTemplatePage";
 import {IAppBuilderTemplatePageProps} from "@AppBuilderShared/types/pages/appbuildertemplates";
 import {Button, MantineThemeComponent, useProps} from "@mantine/core";
 import React, {ReactElement, useState} from "react";
 import classes from "./AppBuilderTemplateSelector.module.css";
 
-export type AppBuilderTemplateType = "grid" | "appshell";
+export type AppBuilderTemplateType = "grid" | "appshell" | "overlay" | "overlay-grid";
 
 type TemplateMapType = Record<
 	AppBuilderTemplateType,
@@ -16,6 +18,8 @@ type TemplateMapType = Record<
 const templateMap: TemplateMapType = {
 	appshell: AppBuilderAppShellTemplatePage,
 	grid: AppBuilderGridTemplatePage,
+	overlay: AppBuilderOverlayTemplatePage,
+	"overlay-grid": AppBuilderOverlayGridTemplatePage,
 };
 
 interface StyleProps {
@@ -26,7 +30,7 @@ interface StyleProps {
 }
 
 const defaultStyleProps: StyleProps = {
-	template: "appshell",
+	template: "overlay",
 	showContainerButtons: false,
 };
 

@@ -1,0 +1,52 @@
+.overlayTemplatePage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    /* Ensure this container establishes the positioning context */
+    z-index: 0;
+}
+
+.overlayTemplateMain {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* 3D viewer takes the full screen */
+    z-index: 1;
+    /* Remove any default background - let the 3D viewer show through */
+    background: transparent;
+}
+
+/* Ensure viewport overlay wrappers are positioned correctly */
+.overlayTemplatePage :global(.viewportOverlayWrapper) {
+    position: absolute;
+    z-index: 100;
+    pointer-events: none; /* Allow clicks to pass through to positioning wrapper */
+}
+
+.overlayTemplatePage :global(.viewportOverlayWrapper) > * {
+    pointer-events: auto; /* Re-enable pointer events for the actual widgets */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .overlayTemplatePage {
+        /* On mobile, might need some adjustments */
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .overlayTemplatePage :global(.floatingWidget) {
+        border: 2px solid;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .overlayTemplatePage :global(.floatingWidget) {
+        transition: none;
+    }
+}

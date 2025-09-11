@@ -1,0 +1,102 @@
+.floatingWidget {
+    position: relative;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    min-width: 200px;
+}
+
+.floatingWidgetHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+    border-bottom: 1px solid var(--mantine-color-gray-3);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    min-height: 44px;
+}
+
+.floatingWidgetTitle {
+    font-weight: 600;
+    font-size: var(--mantine-font-size-sm);
+    color: var(--mantine-color-text);
+    flex: 1;
+    margin-right: var(--mantine-spacing-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.floatingWidgetControls {
+    display: flex;
+    gap: var(--mantine-spacing-xs);
+    align-items: center;
+}
+
+.floatingWidgetContent {
+    transition: padding 0.3s ease;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+    .responsiveHide {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1024px) {
+    .floatingWidget {
+        min-width: 150px;
+        font-size: var(--mantine-font-size-sm);
+    }
+    
+    .floatingWidgetHeader {
+        padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+        min-height: 36px;
+    }
+    
+    .floatingWidgetTitle {
+        font-size: var(--mantine-font-size-xs);
+    }
+}
+
+/* Animation for expand/collapse */
+.floatingWidget[data-collapsed="true"] {
+    max-height: 44px;
+}
+
+/* Hover effects */
+.floatingWidget:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--mantine-shadow-lg);
+}
+
+/* Focus styles for accessibility */
+.floatingWidget:focus-within {
+    outline: 2px solid var(--mantine-color-blue-5);
+    outline-offset: 2px;
+}
+
+/* Glass effect support */
+.floatingWidget[data-backdrop-blur="true"] {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Dark mode support */
+[data-mantine-color-scheme="dark"] .floatingWidget {
+    background: rgba(26, 27, 30, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-mantine-color-scheme="dark"] .floatingWidgetHeader {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-mantine-color-scheme="dark"] .floatingWidget[data-backdrop-blur="true"] {
+    background: rgba(26, 27, 30, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.1);
+}
