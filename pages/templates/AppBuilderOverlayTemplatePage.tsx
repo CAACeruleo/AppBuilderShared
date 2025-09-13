@@ -135,7 +135,7 @@ export default function AppBuilderOverlayTemplatePage(
 					position={topPosition as any}
 					offset={topOffset}
 				>
-					<FloatingWidget {...commonWidgetProps} title="Top Panel">
+					<FloatingWidget {...commonWidgetProps}>
 						<AppBuilderContainerWrapper name="top">
 							{top.node}
 						</AppBuilderContainerWrapper>
@@ -149,7 +149,7 @@ export default function AppBuilderOverlayTemplatePage(
 					position={leftPosition as any}
 					offset={leftOffset}
 				>
-					<FloatingWidget {...commonWidgetProps} title="Left Panel">
+					<FloatingWidget {...commonWidgetProps}>
 						<AppBuilderContainerWrapper name="left">
 							{left.node}
 						</AppBuilderContainerWrapper>
@@ -163,7 +163,7 @@ export default function AppBuilderOverlayTemplatePage(
 					position={rightPosition as any}
 					offset={rightOffset}
 				>
-					<FloatingWidget {...commonWidgetProps} title="Right Panel">
+					<FloatingWidget {...commonWidgetProps}>
 						<AppBuilderContainerWrapper name="right">
 							{right.node}
 						</AppBuilderContainerWrapper>
@@ -177,7 +177,7 @@ export default function AppBuilderOverlayTemplatePage(
 					position={bottomPosition as any}
 					offset={bottomOffset}
 				>
-					<FloatingWidget {...commonWidgetProps} title="Bottom Panel">
+					<FloatingWidget {...commonWidgetProps}>
 						<AppBuilderContainerWrapper name="bottom">
 							{bottom.node}
 						</AppBuilderContainerWrapper>

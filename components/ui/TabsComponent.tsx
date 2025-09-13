@@ -2,10 +2,10 @@ import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {
 	BoxProps,
-	ScrollArea,
-	ScrollAreaProps,
+	MantineThemeComponent,
 	Stack,
 	Tabs,
+	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useEffect, useMemo, useRef, useState} from "react";
 
@@ -25,25 +25,37 @@ export interface ITabsComponentProps extends BoxProps {
 	defaultValue: string;
 	/** The tabs. */
 	tabs: PropsTab[];
-	/** Enable vertical scrolling in tab panels */
-	scrollableContent?: boolean;
-	/** Maximum height for tab content before scrolling */
-	contentMaxHeight?: string | number;
-	/** Fill available height in container and scroll when content exceeds */
+	/** Fill available height in container */
 	fillAvailableHeight?: boolean;
-	/** Scroll area styling options */
-	scrollAreaProps?: ScrollAreaProps;
 }
 
-export default function TabsComponent({
-	defaultValue,
-	tabs,
-	scrollableContent = false,
-	contentMaxHeight = "400px",
-	fillAvailableHeight = false,
-	scrollAreaProps,
-	...rest
-}: ITabsComponentProps) {
+type TabsComponentThemePropsType = Partial<
+	Pick<ITabsComponentProps, "fillAvailableHeight">
+>;
+
+export function TabsComponentThemeProps(
+	props: TabsComponentThemePropsType & {styles?: any},
+): MantineThemeComponent {
+	const {styles, ...defaultProps} = props;
+	return {
+		defaultProps,
+		styles,
+	};
+}
+
+export default function TabsComponent(props: ITabsComponentProps) {
+	const {
+		defaultValue,
+		tabs,
+		fillAvailableHeight = false,
+		...rest
+	} = useProps(
+		"TabsComponent",
+		{
+			fillAvailableHeight: false,
+		},
+		props,
+	);
 	const [activeTab, setActiveTab] = useState<string | null>(defaultValue);
 	// keepMounted=false prop unmount the tab when it is not active
 	const activeTabsHistory = useRef(new Set<string>([defaultValue]));
@@ -92,18 +104,6 @@ export default function TabsComponent({
 		[fillAvailableHeight],
 	);
 
-	const scrollAreaStyle = useMemo(
-		() =>
-			fillAvailableHeight
-				? {
-						flex: 1,
-						minHeight: 0,
-						height: "100%",
-					}
-				: {},
-		[fillAvailableHeight],
-	);
-
 	return tabs.length === 0 ? (
 		<></>
 	) : (
@@ -142,7 +142,9 @@ export default function TabsComponent({
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const {name, icon, children, ...rest} = tab;
 
-				const content = <Stack>{children}</Stack>;
+				const content = (
+					<Stack style={{height: "100%"}}>{children}</Stack>
+				);
 
 				return (
 					<Tabs.Panel
@@ -151,24 +153,7 @@ export default function TabsComponent({
 						value={name}
 						style={tabsPanelStyle}
 					>
-						{activeTabsHistory.current.has(name) &&
-							(scrollableContent ? (
-								<ScrollArea
-									h={
-										fillAvailableHeight
-											? "100%"
-											: contentMaxHeight
-									}
-									scrollbarSize={8}
-									scrollHideDelay={1000}
-									style={scrollAreaStyle}
-									{...scrollAreaProps}
-								>
-									{content}
-								</ScrollArea>
-							) : (
-								content
-							))}
+						{activeTabsHistory.current.has(name) && content}
 					</Tabs.Panel>
 				);
 			})}

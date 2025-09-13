@@ -1,10 +1,16 @@
 .floatingWidget {
 	position: relative;
 	transition: all 0.3s ease;
-	overflow: hidden;
+	overflow: visible;
 	min-width: 200px;
 	display: flex;
 	flex-direction: column;
+	max-height: 80vh;
+	box-sizing: border-box;
+	/* Ensure div styling works properly */
+	background: transparent;
+	border: none;
+	box-shadow: none;
 }
 
 .floatingWidgetHeader {
@@ -41,6 +47,9 @@
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
+	overflow: auto;
+	/* Ensure proper height distribution to children */
+	box-sizing: border-box;
 }
 
 /* Responsive behavior */
@@ -71,16 +80,14 @@
 	max-height: 44px;
 }
 
-/* Hover effects */
+/* Hover effects - disabled for frameless appearance */
 .floatingWidget:hover {
-	transform: translateY(-1px);
-	box-shadow: var(--mantine-shadow-lg);
+	/* No visual effects to maintain frameless appearance */
 }
 
-/* Focus styles for accessibility */
+/* Focus styles for accessibility - disabled for frameless appearance */
 .floatingWidget:focus-within {
-	outline: 2px solid var(--mantine-color-blue-5);
-	outline-offset: 2px;
+	outline: none;
 }
 
 /* Glass effect support */

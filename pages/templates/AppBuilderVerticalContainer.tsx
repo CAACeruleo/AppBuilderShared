@@ -1,6 +1,8 @@
 import {
 	MantineSpacing,
 	MantineThemeComponent,
+	ScrollArea,
+	ScrollAreaProps,
 	Stack,
 	StyleProp,
 	useProps,
@@ -14,10 +16,18 @@ interface Props {
 interface StyleProps {
 	/** padding */
 	p: StyleProp<MantineSpacing>;
+	/** Enable scrollable content */
+	scrollable?: boolean;
+	/** Maximum height before scrolling */
+	maxHeight?: string | number;
+	/** ScrollArea props */
+	scrollAreaProps?: ScrollAreaProps;
 }
 
 const defaultStyleProps: StyleProps = {
 	p: "xs",
+	scrollable: false,
+	maxHeight: "80vh",
 };
 
 type AppBuilderVerticalContainerThemePropsType = Partial<StyleProps>;
@@ -38,11 +48,28 @@ export function AppBuilderVerticalContainerThemeProps(
 export default function AppBuilderVerticalContainer(
 	props: Props & Partial<StyleProps>,
 ) {
-	const {children, ...rest} = useProps(
-		"AppBuilderVerticalContainer",
-		defaultStyleProps,
-		props,
-	);
+	const {children, scrollable, maxHeight, scrollAreaProps, ...rest} =
+		useProps("AppBuilderVerticalContainer", defaultStyleProps, props);
 
-	return <Stack {...rest}>{children}</Stack>;
+	const content = <Stack {...rest}>{children}</Stack>;
+
+	if (scrollable) {
+		return (
+			<ScrollArea
+				style={{
+					height: "100%",
+					maxHeight,
+					flex: 1,
+					minHeight: 0,
+				}}
+				scrollbarSize={8}
+				scrollHideDelay={1000}
+				{...scrollAreaProps}
+			>
+				{content}
+			</ScrollArea>
+		);
+	}
+
+	return content;
 }

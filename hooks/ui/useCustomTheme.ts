@@ -20,6 +20,7 @@ import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shaped
 import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
 import {StargateInputThemeProps} from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
 import {StargateSharedThemeProps} from "@AppBuilderShared/components/shapediver/stargate/stargateShared";
+import {FloatingWidgetThemeProps} from "@AppBuilderShared/components/shapediver/ui/FloatingWidget";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
@@ -28,6 +29,7 @@ import {ViewportAnchor3dThemeProps} from "@AppBuilderShared/components/shapedive
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
+import {TabsComponentThemeProps} from "@AppBuilderShared/components/ui/TabsComponent";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
@@ -36,6 +38,8 @@ import {AppBuilderContainerThemeProps} from "@AppBuilderShared/pages/templates/A
 import {AppBuilderContainerWrapperThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
 import {AppBuilderGridTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
 import {AppBuilderHorizontalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
+import {AppBuilderOverlayGridTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderOverlayGridTemplatePage";
+import {AppBuilderOverlayTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderOverlayTemplatePage";
 import {AppBuilderTemplateSelectorThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 import {AppBuilderVerticalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
@@ -591,6 +595,42 @@ export const useCustomTheme = (props: Props = {}) => {
 				// bottomFullWidth: false,
 			}),
 			/**
+			 * AppBuilderOverlayTemplatePage
+			 *
+			 * Overlay layout template for AppBuilder with floating widgets.
+			 */
+			AppBuilderOverlayTemplatePage:
+				AppBuilderOverlayTemplatePageThemeProps({
+					// widgetBackground: "rgba(255, 255, 255, 0.9)",
+					// widgetShadow: "md",
+					// widgetRadius: "lg",
+					// enableCollapse: false,
+					// enableClose: false,
+					// backdropBlur: false,
+					// widgetPadding: "md",
+					// widgetMaxWidth: "400px",
+					// widgetMaxHeight: "600px",
+					// responsiveHide: false,
+				}),
+			/**
+			 * AppBuilderOverlayGridTemplatePage
+			 *
+			 * Grid-based overlay layout template for AppBuilder with floating widgets.
+			 */
+			AppBuilderOverlayGridTemplatePage:
+				AppBuilderOverlayGridTemplatePageThemeProps({
+					// widgetBackground: "rgba(255, 255, 255, 0.9)",
+					// widgetShadow: "md",
+					// widgetRadius: "lg",
+					// enableCollapse: false,
+					// enableClose: false,
+					// backdropBlur: false,
+					// widgetPadding: "md",
+					// responsiveHide: false,
+					// columns: 4,
+					// rows: 4,
+				}),
+			/**
 			 * AppBuilderHorizontalContainer
 			 *
 			 * Used for horizontal AppBuilder containers.
@@ -657,6 +697,24 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			AppBuilderVerticalContainer: AppBuilderVerticalContainerThemeProps({
 				// p: "md",
+			}),
+			/**
+			 * TabsComponent
+			 *
+			 * Custom tabs component with scrollable content support.
+			 */
+			TabsComponent: TabsComponentThemeProps({
+				// scrollableContent: false,
+				// fillAvailableHeight: false,
+			}),
+			/**
+			 * FloatingWidget
+			 *
+			 * Floating overlay widget component for overlay templates.
+			 */
+			FloatingWidget: FloatingWidgetThemeProps({
+				// background: "rgba(255, 255, 255, 0.9)",
+				// withBorder: true,
 			}),
 			/**
 			 * CreateModelStateHook

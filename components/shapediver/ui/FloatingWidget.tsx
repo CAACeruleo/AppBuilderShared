@@ -3,7 +3,6 @@ import {
 	ActionIcon,
 	Collapse,
 	MantineThemeComponent,
-	Paper,
 	useProps,
 } from "@mantine/core";
 import React, {useMemo, useState} from "react";
@@ -32,6 +31,8 @@ export interface FloatingWidgetStyleProps {
 	zIndex?: number;
 	/** Auto-hide on small screens */
 	responsiveHide?: boolean;
+	/** Show border around widget */
+	withBorder?: boolean;
 }
 
 interface FloatingWidgetProps extends Partial<FloatingWidgetStyleProps> {
@@ -61,13 +62,16 @@ const defaultStyleProps: FloatingWidgetStyleProps = {
 	maxHeight: "600px",
 	zIndex: 100,
 	responsiveHide: false,
+	withBorder: true,
 };
 
 export function FloatingWidgetThemeProps(
-	props: Partial<FloatingWidgetStyleProps>,
+	props: Partial<FloatingWidgetStyleProps> & {styles?: any},
 ): MantineThemeComponent {
+	const {styles, ...defaultProps} = props;
 	return {
-		defaultProps: props,
+		defaultProps,
+		styles,
 	};
 }
 
@@ -94,6 +98,7 @@ export default function FloatingWidget(props: FloatingWidgetProps) {
 		maxHeight,
 		zIndex,
 		responsiveHide,
+		withBorder,
 	} = useProps("FloatingWidget", defaultStyleProps, rest);
 
 	const [collapsed, setCollapsed] = useState(defaultCollapsed);
@@ -113,12 +118,28 @@ export default function FloatingWidget(props: FloatingWidgetProps) {
 			backgroundColor: background,
 			backdropFilter: backdropBlur ? "blur(8px)" : undefined,
 			maxWidth,
-			maxHeight: collapsed ? "auto" : maxHeight,
+			maxHeight: collapsed ? "auto" : (maxHeight ?? "80vh"),
 			zIndex,
 			display: "flex",
 			flexDirection: "column",
+			borderRadius: radius,
+			boxShadow:
+				shadow === "none" ? "none" : `var(--mantine-shadow-${shadow})`,
+			border: withBorder
+				? "1px solid var(--mantine-color-gray-3)"
+				: "none",
 		}),
-		[background, backdropBlur, maxWidth, maxHeight, collapsed, zIndex],
+		[
+			background,
+			backdropBlur,
+			maxWidth,
+			maxHeight,
+			collapsed,
+			zIndex,
+			radius,
+			shadow,
+			withBorder,
+		],
 	);
 
 	const showHeader = enableCollapse || enableClose || title;
@@ -131,6 +152,7 @@ export default function FloatingWidget(props: FloatingWidgetProps) {
 						flex: 1,
 						display: "flex",
 						flexDirection: "column" as const,
+						minHeight: 0,
 					},
 		[collapsed],
 	);
@@ -149,12 +171,9 @@ export default function FloatingWidget(props: FloatingWidgetProps) {
 	);
 
 	return (
-		<Paper
+		<div
 			className={`${classes.floatingWidget} ${responsiveHide ? classes.responsiveHide : ""} ${className || ""}`}
-			shadow={shadow}
-			radius={radius}
 			style={containerStyle}
-			withBorder
 		>
 			{showHeader && (
 				<div className={classes.floatingWidgetHeader}>
@@ -207,6 +226,6 @@ export default function FloatingWidget(props: FloatingWidgetProps) {
 					{children}
 				</div>
 			</Collapse>
-		</Paper>
+		</div>
 	);
 }
