@@ -17,6 +17,7 @@ import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
+import {useEmbeddingTracker} from "../../../hooks/useEmbeddingTracker";
 import React, {useContext, useMemo} from "react";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
@@ -128,6 +129,9 @@ interface Props extends IAppBuilderSettingsSession {
  * @returns
  */
 export default function AppBuilderPage(props: Partial<Props>) {
+	// Track embedding usage
+	useEmbeddingTracker();
+
 	// get default session dto, if any
 	const {defaultSessionDto} = useDefaultSessionDto(props);
 
