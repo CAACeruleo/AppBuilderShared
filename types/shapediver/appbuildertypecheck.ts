@@ -414,6 +414,16 @@ const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({});
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientOutputs
 const IAppBuilderWidgetPropsDesktopClientOutputsSchema = z.object({});
 
+// Zod type definition for IAppBuilderWidgetPropsArQrCode
+const IAppBuilderWidgetPropsArQrCodeSchema = z
+	.object({
+		size: z.number().int().positive().max(1024).optional(),
+		title: z.string().optional(),
+		instructions: z.string().optional(),
+		hideOnMobile: z.boolean().optional(),
+	})
+	.extend(IAppBuilderWidgetPropsCommonSchema.shape);
+
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -471,6 +481,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("sceneTreeExplorer"),
 		props: IAppBuilderWidgetPropsSceneTreeExplorerSchema,
+	}),
+	z.object({
+		type: z.literal("arQrCode"),
+		props: IAppBuilderWidgetPropsArQrCodeSchema,
 	}),
 ]);
 

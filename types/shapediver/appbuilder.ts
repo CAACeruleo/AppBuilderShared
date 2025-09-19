@@ -247,7 +247,8 @@ export type AppBuilderWidgetType =
 	| "progress"
 	| "desktopClientSelection"
 	| "desktopClientOutputs"
-	| "sceneTreeExplorer";
+	| "sceneTreeExplorer"
+	| "arQrCode";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -382,6 +383,18 @@ export interface IAppBuilderWidgetPropsDesktopClientOutputs {
 	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
 }
 
+/** Properties of an AR QR code widget. */
+export interface IAppBuilderWidgetPropsArQrCode {
+	/** QR code image size in pixels (default: 200) */
+	size?: number;
+	/** Widget title (default: "View in AR") */
+	title?: string;
+	/** Instruction text (default: "Scan this QR code with your phone to view in AR") */
+	instructions?: string;
+	/** Hide widget on mobile devices (default: true) */
+	hideOnMobile?: boolean;
+}
+
 /**
  * A widget.
  *
@@ -409,7 +422,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsProgress
 		| IAppBuilderWidgetPropsDesktopClientSelection
 		| IAppBuilderWidgetPropsDesktopClientOutputs
-		| IAppBuilderWidgetPropsSceneTreeExplorer;
+		| IAppBuilderWidgetPropsSceneTreeExplorer
+		| IAppBuilderWidgetPropsArQrCode;
 }
 
 /**
@@ -686,6 +700,13 @@ export function isDesktopClientOutputsWidget(
 	props: IAppBuilderWidgetPropsDesktopClientOutputs;
 } {
 	return widget.type === "desktopClientOutputs";
+}
+
+/** assert widget type "arQrCode" */
+export function isArQrCodeWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "arQrCode"; props: IAppBuilderWidgetPropsArQrCode} {
+	return widget.type === "arQrCode";
 }
 
 /** assert action type "createModelState" */

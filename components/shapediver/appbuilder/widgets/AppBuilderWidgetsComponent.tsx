@@ -1,6 +1,7 @@
 import AppBuilderAccordionWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";
 import AppBuilderAreaChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
+import AppBuilderArQrCodeWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderArQrCodeWidgetComponent";
 import AppBuilderBarChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderBarChartWidgetComponent";
 import AppBuilderImageWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderImageWidgetComponent";
 import AppBuilderLineChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
@@ -14,6 +15,7 @@ import {
 	isActionsWidget,
 	isAgentWidget,
 	isAreaChartWidget,
+	isArQrCodeWidget,
 	isBarChartWidget,
 	isDesktopClientOutputsWidget,
 	isDesktopClientSelectionWidget,
@@ -172,6 +174,14 @@ export default function AppBuilderWidgetsComponent({
 					return (
 						<AppBuilderSceneTreeExplorerWidgetComponent
 							key={i}
+							{...w.props}
+						/>
+					);
+				else if (isArQrCodeWidget(w))
+					return (
+						<AppBuilderArQrCodeWidgetComponent
+							key={i}
+							namespace={namespace}
 							{...w.props}
 						/>
 					);
