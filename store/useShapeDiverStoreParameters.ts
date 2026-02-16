@@ -337,6 +337,20 @@ function createGenericParameterExecutorForSession(
 			// cleanup url
 			if (!skipUrlUpdate) removeStatesFromUrl(true, true, true);
 
+			const committedValues = Object.keys(values).reduce(
+				(acc, paramId) => {
+					acc[paramId] = session.parameters[paramId].value;
+					return acc;
+				},
+				{} as {[parameterId: string]: unknown},
+			);
+			if (Object.keys(committedValues).length > 0) {
+				callbacks?.onParameterChanged?.({
+					namespace,
+					values: committedValues,
+				});
+			}
+
 			// report success
 			callbacks?.onSuccess({
 				namespace,

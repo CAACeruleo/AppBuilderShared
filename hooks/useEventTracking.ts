@@ -3,6 +3,7 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {TrackerContext} from "@AppBuilderShared/context/TrackerContext";
 import {
 	IEventTracking,
+	IParameterChangedTrackingProps,
 	IEventTrackingProps,
 } from "@AppBuilderShared/types/eventTracking";
 import {Logger} from "@AppBuilderShared/utils/logger";
@@ -89,6 +90,14 @@ export const useEventTracking = () => {
 						duration: duration
 							? roundToBracket(duration, 100)
 							: undefined,
+						},
+					});
+			},
+			onParameterChanged: (context: IParameterChangedTrackingProps) => {
+				tracker.trackEvent("parameter_changed", {
+					props: {
+						namespace: context.namespace,
+						values: context.values,
 					},
 				});
 			},
