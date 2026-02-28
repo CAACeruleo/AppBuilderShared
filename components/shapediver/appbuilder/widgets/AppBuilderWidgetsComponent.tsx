@@ -1,3 +1,4 @@
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import AppBuilderAccordionUiWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
 import AppBuilderAccordionWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";
@@ -8,7 +9,6 @@ import AppBuilderLineChartWidgetComponent from "@AppBuilderShared/components/sha
 import AppBuilderProgressWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderProgressWidgetComponent";
 import AppBuilderRoundChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
 import AppBuilderTextWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {
 	IAppBuilderWidget,
 	isAccordionUiWidget,
@@ -20,12 +20,12 @@ import {
 	isControlsWidget,
 	isDesktopClientOutputsWidget,
 	isDesktopClientSelectionWidget,
+	isFormWidget,
 	isImageWidget,
 	isLineChartWidget,
 	isProgressWidget,
 	isRoundChartWidget,
 	isSavedStatesWidget,
-	isSceneTreeExplorerWidget,
 	isStackUiWidget,
 	isTextWidget,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -36,7 +36,7 @@ import AppBuilderStackUiWidgetButtonComponent from "~/shared/components/shapediv
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
-import AppBuilderSceneTreeExplorerWidgetComponent from "./AppBuilderSceneTreeExplorerWidgetComponent";
+import AppBuilderFormWidgetComponent from "./AppBuilderFormWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
 );
@@ -161,6 +161,14 @@ export default function AppBuilderWidgetsComponent({
 							{...w.props}
 						/>
 					);
+				else if (isFormWidget(w))
+					return (
+						<AppBuilderFormWidgetComponent
+							key={i}
+							namespace={namespace}
+							{...w.props}
+						/>
+					);
 				else if (isAgentWidget(w))
 					return (
 						<Suspense
@@ -197,13 +205,6 @@ export default function AppBuilderWidgetsComponent({
 						<AppBuilderDesktopClientOutputsWidgetComponent
 							key={i}
 							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isSceneTreeExplorerWidget(w))
-					return (
-						<AppBuilderSceneTreeExplorerWidgetComponent
-							key={i}
 							{...w.props}
 						/>
 					);

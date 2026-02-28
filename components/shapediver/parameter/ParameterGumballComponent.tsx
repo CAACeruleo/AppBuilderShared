@@ -1,8 +1,8 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
@@ -28,14 +28,7 @@ import {
 	IGumballParameterProps,
 	validateGumballParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
@@ -72,6 +65,7 @@ export default function ParameterGumballComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
 	const {
+		actions,
 		definition,
 		handleChange,
 		setOnCancelCallback,
@@ -92,8 +86,8 @@ export default function ParameterGumballComponent(
 	const {addInteractionRequest, removeInteractionRequest} =
 		useShapeDiverStoreInteractionRequestManagement();
 
-	// get the notification context
-	const notifications = useContext(NotificationContext);
+	// get the notification store
+	const notifications = useNotificationStore();
 
 	// settings validation
 	const gumballProps = useMemo(() => {
@@ -113,7 +107,9 @@ export default function ParameterGumballComponent(
 	}, [definition.settings]);
 
 	// state for the gumball application
-	const [gumballActive, setGumballActive] = useState<boolean>(false);
+	const [gumballActive, setGumballActive] = useState<boolean>(
+		gumballProps.activeMode === "activeOnStart" ? true : false,
+	);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		{
@@ -173,7 +169,7 @@ export default function ParameterGumballComponent(
 			setLastConfirmedValue(parsed);
 			setTransformedNodeNames(parsed);
 		}
-	}, [definition]);
+	}, [JSON.stringify(definition)]);
 
 	/**
 	 * Callback function to change the value of the parameter.
@@ -239,6 +235,8 @@ export default function ParameterGumballComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the gumball state changes.
 	 */
 	useEffect(() => {
+		actions.setDisableOtherParameters(gumballActive);
+
 		if (gumballActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
@@ -252,6 +250,7 @@ export default function ParameterGumballComponent(
 		}
 
 		return () => {
+			actions.setDisableOtherParameters(false);
 			if (interactionRequestTokenRef.current) {
 				removeInteractionRequest(interactionRequestTokenRef.current);
 				interactionRequestTokenRef.current = undefined;

@@ -1,9 +1,9 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import DrawingOptionsComponent from "@AppBuilderShared/components/shapediver/ui/DrawingOptionsComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
@@ -32,14 +32,7 @@ import {
 	RENDERER_TYPE,
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
@@ -67,8 +60,15 @@ const parsePointsData = (value?: string): PointsData => {
 export default function ParameterDrawingComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
-	const {definition, handleChange, onCancel, disabled, state, value} =
-		useParameterComponentCommons<string>(props);
+	const {
+		actions,
+		definition,
+		handleChange,
+		onCancel,
+		disabled,
+		state,
+		value,
+	} = useParameterComponentCommons<string>(props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterDrawingComponent",
@@ -86,8 +86,8 @@ export default function ParameterDrawingComponent(
 	const {viewport} = useShapeDiverStoreViewport((state) => ({
 		viewport: state.viewports[viewportId],
 	}));
-	// get the notification context
-	const notifications = useContext(NotificationContext);
+	// get the notification store
+	const notifications = useNotificationStore();
 
 	// settings validation
 	const drawingProps = useMemo(() => {
@@ -107,7 +107,9 @@ export default function ParameterDrawingComponent(
 	}, [definition.settings]);
 
 	// state for the drawing application
-	const [drawingActive, setDrawingActive] = useState<boolean>(false);
+	const [drawingActive, setDrawingActive] = useState<boolean>(
+		drawingProps.general?.activeMode === "activeOnStart" ? true : false,
+	);
 	// state for the interaction permission
 	const [hasInteractionPermission, setHasInteractionPermission] =
 		useState<boolean>(false);
@@ -249,6 +251,8 @@ export default function ParameterDrawingComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the drawing state changes.
 	 */
 	useEffect(() => {
+		actions.setDisableOtherParameters(drawingActive);
+
 		if (drawingActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
@@ -262,6 +266,7 @@ export default function ParameterDrawingComponent(
 		}
 
 		return () => {
+			actions.setDisableOtherParameters(false);
 			if (interactionRequestTokenRef.current) {
 				removeInteractionRequest(interactionRequestTokenRef.current);
 				updateInteractionRequestToken(undefined);

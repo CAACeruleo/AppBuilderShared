@@ -1,11 +1,11 @@
-import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {
 	exceptionWrapper,
 	exceptionWrapperAsync,
-} from "@AppBuilderShared/utils/exceptionWrapper";
+} from "@AppBuilderLib/shared/lib/exceptionWrapper";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {
 	filterAndValidateParameters,
 	generateParameterFeedback,
@@ -31,7 +31,7 @@ export function useParameterImportExport(namespace: string) {
 		})),
 	);
 
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 	const errorReporting = useContext(ErrorReportingContext);
 
 	/**

@@ -29,6 +29,12 @@ export interface IScrollingApi<TItem> {
 	 * The currently loaded items.
 	 */
 	items: TItem[];
+	/**
+	 * Reset loading state, items, error and hasNextPage.
+	 */
+	reset: () => void;
+	/** Changes whenever reset is called. */
+	resetState: unknown;
 }
 
 /** Data for an item shown by a selection component. */

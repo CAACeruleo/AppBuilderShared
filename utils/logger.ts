@@ -1,5 +1,5 @@
-import {GlobalNotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {QUERYPARAM_LOGGING_LEVEL} from "@AppBuilderShared/types/shapediver/queryparams";
+import {getNotificationActions} from "@AppBuilderLib/features/notifications";
+import {QUERYPARAM_LOGGING_LEVEL} from "@AppBuilderLib/shared/config/queryparams";
 
 const urlSearchParams = new URLSearchParams(window.location.search);
 const loggingLevelInput = urlSearchParams.get(QUERYPARAM_LOGGING_LEVEL);
@@ -47,7 +47,7 @@ export const Logger = {
 	warn: (message?: any, ...optionalParams: any[]) => {
 		console.warn(formatMessage("warn", message), ...optionalParams);
 		if (loggingLevel === "debug") {
-			GlobalNotificationContext.error({
+			getNotificationActions().error({
 				message: String(message),
 				// optionalParams aren't suitable for notifications
 			});
@@ -55,7 +55,7 @@ export const Logger = {
 	},
 	error: (message?: any, ...optionalParams: any[]) => {
 		console.error(formatMessage("error", message), ...optionalParams);
-		GlobalNotificationContext.error({
+		getNotificationActions().error({
 			message: String(message),
 		});
 	},

@@ -1,24 +1,26 @@
-import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
+import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";
+import NotificationModelStateCreated from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
-import ViewportIcons from "@AppBuilderShared/components/shapediver/viewport/ViewportIcons";
-import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
 import {useAppBuilderStandardContainers} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderStandardContainers";
 import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
 import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
+import {useECommerceApiConnectorActions} from "@AppBuilderShared/hooks/shapediver/useECommerceApiConnectorActions";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
 import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
 import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
-import React, {useContext, useMemo} from "react";
+import React, {useContext, useEffect, useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 
@@ -137,7 +139,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const {
 		viewportComponent: {component: ViewportComponent} = {},
 		viewportOverlayWrapper: {component: ViewportOverlayWrapper} = {},
-		viewportIcons: {component: ViewportIconsComponent} = {},
+		viewportIcons: {component: ViewportIcons} = {},
 	} = componentContext;
 
 	// get settings for app builder from query string
@@ -205,9 +207,23 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	useKeyBindings({
 		namespace,
 		getNotification: (props) => (
-			<ModelStateNotificationCreated {...props} />
+			<NotificationModelStateCreated {...props} />
 		),
 	});
+
+	// set title of the page to the name of the model
+	const {currentModel} = useShapeDiverStorePlatform(
+		useShallow((state) => ({
+			currentModel: state.currentModel,
+		})),
+	);
+	useEffect(() => {
+		if (currentModel) {
+			document.title = `${currentModel?.title ?? currentModel?.slug} | ShapeDiver App Builder`;
+		}
+	}, [currentModel]);
+
+	useECommerceApiConnectorActions();
 
 	const showMarkdown =
 		!(settings && hasSession) && // no settings or no session
@@ -248,7 +264,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 					>
 						{ViewportOverlayWrapper && (
 							<>
-								{ViewportIconsComponent && (
+								{ViewportIcons && (
 									<ViewportIcons
 										namespace={namespace}
 										hideJsonMenu={

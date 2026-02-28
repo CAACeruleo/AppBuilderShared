@@ -1,7 +1,10 @@
 import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	PropsParameterComponent,
+	PropsParameterWithForm,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParameterState} from "@AppBuilderShared/types/shapediver/parameter";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -10,25 +13,50 @@ import {CUSTOM_SESSION_ID_POSTFIX} from "../appbuilder/useAppBuilderCustomParame
 /**
  * Hook providing functionality common to all parameter components like
  * {@link ParameterSliderComponent}, {@link ParameterStringComponent}, etc.
- * @param props
+ * Optionally accepts a form instance for Mantine form integration.
+ * @param props - Parameter props, optionally including form instance
  * @param debounceTimeoutForImmediateExecution
  * @param initializer
- * @returns
+ * @returns Common parameter functionality including optional form instance
  */
 export function useParameterComponentCommons<T>(
-	props: PropsParameter,
+	props: PropsParameterComponent,
 	debounceTimeoutForImmediateExecution: number = 1000,
 	initializer: (
 		state: IShapeDiverParameterState<T | string>,
 	) => T | string = (state) => state.uiValue,
 ) {
-	const {namespace, disableIfDirty, acceptRejectMode} = props;
-	const {definition, actions, state} = useParameter<T | string>(props);
-	const executing = useShapeDiverStoreParameters((state) => {
-		const ids = state.sessionDependency[namespace];
+	const {
+		namespace,
+		disableIfDirty,
+		acceptRejectMode,
+		reactive = true,
+		value: customValue,
+	} = props;
+	const {
+		definition,
+		actions: paramActions,
+		state,
+	} = useParameter<T | string>(props);
+	const customActions = props.customActions || {};
+	const actions = {...paramActions, ...customActions};
+	const {executing, sessionDependencies} = useShapeDiverStoreParameters(
+		(state) => {
+			const sessionDependencies = state.sessionDependency[namespace];
 
-		return !ids.every((id) => !state.parameterChanges[id]?.executing);
-	});
+			return {
+				executing: !sessionDependencies.every(
+					(id) => !state.parameterChanges[id]?.executing,
+				),
+				sessionDependencies,
+			};
+		},
+	);
+
+	const disabledByParameter = useShapeDiverStoreParameters((state) =>
+		state.isAnyParameterDisablingOthers(definition.id),
+	);
+
 	const processesInSession = useShapeDiverStoreProcessManager((state) => {
 		// check if there are currently processes running in the session
 		return (
@@ -59,9 +87,6 @@ export function useParameterComponentCommons<T>(
 			}).length > 0
 		);
 	});
-	const sessionDependencies = useShapeDiverStoreParameters((state) => {
-		return state.sessionDependency[namespace];
-	});
 	const [value, setValue] = useState(initializer(state));
 
 	const debounceTimeout = acceptRejectMode
@@ -91,8 +116,16 @@ export function useParameterComponentCommons<T>(
 	);
 
 	useEffect(() => {
-		setValue(state.uiValue);
-	}, [state.uiValue]);
+		if (reactive) {
+			setValue(state.uiValue);
+		}
+	}, [state.uiValue, reactive]);
+
+	useEffect(() => {
+		if (!reactive) {
+			setValue(customValue);
+		}
+	}, [customValue, reactive]);
 
 	// state for the onCancel callback which can be set from the parameter components
 	const [onCancelCallback, setOnCancelCallback] = useState<
@@ -126,13 +159,31 @@ export function useParameterComponentCommons<T>(
 	 *   - the parameter state is dirty AND we should disable the component if so, OR
 	 *   - changes are currently executing
 	 *   - there are processes running
+	 *   - the parameter is disabled by another parameter (e.g. interaction parameters disable other parameters when active)
 	 */
 	const disabled =
-		(disableIfDirty && state.dirty) || executing || processesInSession;
+		(disableIfDirty && state.dirty) ||
+		executing ||
+		processesInSession ||
+		disabledByParameter;
 
 	const memoizedDefinition = useMemo(() => {
 		return {...definition, ...props.overrides};
 	}, [definition, props.overrides]);
+
+	// Extract form from props if provided
+	const form = (props as PropsParameterWithForm).form;
+
+	// Get form input props once if form is available
+	const formInputProps = useMemo(() => {
+		if (!form || !definition) return null;
+		return form.getInputProps(definition.id);
+	}, [form, definition]);
+
+	const formKey = useMemo(() => {
+		if (!form || !definition) return null;
+		return form.key(definition.id);
+	}, [form, definition]);
 
 	return {
 		definition: memoizedDefinition,
@@ -145,5 +196,9 @@ export function useParameterComponentCommons<T>(
 		onCancel,
 		disabled,
 		sessionDependencies,
+		// Form instance (optional)
+		form,
+		formInputProps,
+		formKey,
 	};
 }

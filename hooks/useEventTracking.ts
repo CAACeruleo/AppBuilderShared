@@ -1,6 +1,6 @@
-import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {TrackerContext} from "@AppBuilderShared/context/TrackerContext";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
+import {TrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext";
 import {
 	IEventTracking,
 	IParameterChangedTrackingProps,
@@ -17,7 +17,7 @@ import {useContext, useMemo} from "react";
  * @returns
  */
 export const useEventTracking = () => {
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 	const tracker = useContext(TrackerContext);
 	const errorReporting = useContext(ErrorReportingContext);
 

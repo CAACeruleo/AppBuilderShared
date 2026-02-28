@@ -1,7 +1,17 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {
+	QUERYPARAM_DEBUG,
+	QUERYPARAM_LANGFUSE_BASE_URL,
+	QUERYPARAM_LANGFUSE_PUBLIC_KEY,
+	QUERYPARAM_LANGFUSE_SECRET_KEY,
+	QUERYPARAM_MAX_HISTORY,
+	QUERYPARAM_MODEL,
+	QUERYPARAM_OPENAI_API_KEY,
+	QUERYPARAM_SLUG,
+} from "@AppBuilderLib/shared/config/queryparams";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	DEFAULT_SYSTEM_PROMPT,
 	useAgent,
@@ -13,16 +23,6 @@ import {
 	AppBuilderAgentWidgetThemePropsType,
 } from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {
-	QUERYPARAM_DEBUG,
-	QUERYPARAM_LANGFUSE_BASE_URL,
-	QUERYPARAM_LANGFUSE_PUBLIC_KEY,
-	QUERYPARAM_LANGFUSE_SECRET_KEY,
-	QUERYPARAM_MAX_HISTORY,
-	QUERYPARAM_MODEL,
-	QUERYPARAM_OPENAI_API_KEY,
-	QUERYPARAM_SLUG,
-} from "@AppBuilderShared/types/shapediver/queryparams";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,
@@ -134,7 +134,7 @@ export default function AppBuilderAgentWidgetComponent(
 	);
 
 	// Notifications
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	/**
 	 * Handler for image provided by the user.

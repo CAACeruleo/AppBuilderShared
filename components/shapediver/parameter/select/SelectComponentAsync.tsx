@@ -1,6 +1,6 @@
 import {useSelectAsync} from "@AppBuilderShared/hooks/shapediver/parameters/select/useSelectAsync";
 import {Anchor, Group, Loader} from "@mantine/core";
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectGridComponent from "./SelectGridComponent";
@@ -20,7 +20,7 @@ interface SelectComponentAsyncProps extends SelectComponentProps {
  * the actual card rendering to the base SelectFullWidthCardsComponent.
  */
 export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
-	const {type, scrollingApi, onChange, ...propsDefault} = props;
+	const {type, scrollingApi, disabled, onChange, ...propsDefault} = props;
 	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
 		useSelectAsync(scrollingApi);
 
@@ -42,6 +42,14 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		},
 		[onChange, itemsData, debouncedOnSearch, searchTerms],
 	);
+
+	// in case no items are available, reset the value
+	useEffect(() => {
+		if (scrollingApi?.resetState) {
+			onChange(null);
+			setSearchTerms([]);
+		}
+	}, [scrollingApi?.resetState]);
 
 	// show stack of search terms and allow to remove them
 	const topSection = (
@@ -73,7 +81,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
 				items={items}
 				itemData={itemsData}
-				disabled={loading}
+				disabled={loading || disabled}
 				multiselect={false}
 			/>
 		);
@@ -89,7 +97,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
 				items={items}
 				itemData={itemsData}
-				disabled={loading}
+				disabled={loading || disabled}
 				multiselect={false}
 			/>
 		);

@@ -1,5 +1,5 @@
-import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
@@ -480,7 +480,7 @@ export function useAgent(props: Props) {
 		})),
 	);
 
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	/** Chat history for display (user messages and assistant reasoning) */
 	const [chatHistory, setChatHistory] = useState<ChatHistoryType[]>([]);

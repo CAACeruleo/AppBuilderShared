@@ -1,5 +1,5 @@
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import {AppBuilderActionFromType} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionFromType";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {useExports} from "@AppBuilderShared/hooks/shapediver/parameters/useExports";
 import {useOutputs} from "@AppBuilderShared/hooks/shapediver/parameters/useOutputs";
 import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
@@ -202,6 +202,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 					control.props,
 					namespace,
 					index,
+					componentContext,
 				);
 				if (actionComponent) {
 					components.push(actionComponent);
@@ -215,7 +216,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 		});
 
 		return components;
-	}, [controls, parameterMap, exportMap, namespace]);
+	}, [controls, parameterMap, exportMap, namespace, componentContext]);
 
 	if (orderedComponents.length === 0) {
 		return <></>;

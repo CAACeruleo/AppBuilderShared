@@ -1,10 +1,11 @@
-import DesktopClientPanel from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
+import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
+import DesktopClientPanel from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
@@ -12,9 +13,8 @@ import {
 	AttributeVisualizationVisibility,
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useMemo} from "react";
+import React, {useContext, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
-import AppBuilderAttributeVisualizationWidgetComponent from "./widgets/AppBuilderAttributeVisualizationWidgetComponent";
 import AppBuilderSavedStatesWidgetComponent from "./widgets/AppBuilderSavedStatesWidgetComponent";
 
 interface Props {
@@ -40,6 +40,13 @@ export default function AppBuilderFallbackContainerComponent({
 			sessionApi: namespace ? state.sessions[namespace] : undefined,
 		})),
 	);
+
+	const componentContext = useContext(ComponentContext);
+
+	// get the attribute visualization widget component from the component context
+	// if one is registered
+	const AppBuilderAttributeVisualizationWidgetComponent =
+		componentContext.widgets?.attributeVisualization.component;
 
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		const tabProps: ITabsComponentProps = {
@@ -107,7 +114,10 @@ export default function AppBuilderFallbackContainerComponent({
 			});
 		}
 
-		if (!settings?.hideAttributeVisualization) {
+		if (
+			!settings?.hideAttributeVisualization &&
+			AppBuilderAttributeVisualizationWidgetComponent
+		) {
 			const hasSdtfData = outputs.some((output) => {
 				const outputApi =
 					sessionApi?.getOutputById(output.outputId) ||

@@ -9,6 +9,18 @@ import {
 import React from "react";
 import {ViewportOverlayWrapperProps} from "./viewportOverlayWrapper";
 
+export enum ViewportIconButtonEnum {
+	Ar = "ar",
+	Zoom = "zoom",
+	Fullscreen = "fullscreen",
+	Fullscreen3States = "fullscreen3States",
+	Cameras = "cameras",
+	Undo = "undo",
+	Redo = "redo",
+	Reload = "reload",
+	HistoryMenu = "historyMenu",
+}
+
 export interface ViewportIconsProps {
 	/**
 	 * Namespace of the session
@@ -61,6 +73,10 @@ export interface ViewportIconsOptionalProps {
 	 * enable/disable the "fullscreen" button
 	 */
 	enableFullscreenBtn?: boolean;
+	/**
+	 * enable/disable the "fullscreen 3 states (normal | fullscreen with inputs | viewer only fullscreen)" button
+	 */
+	enableFullscreenBtn3States?: boolean;
 	/**
 	 * enable/disable the "zoom" button
 	 */

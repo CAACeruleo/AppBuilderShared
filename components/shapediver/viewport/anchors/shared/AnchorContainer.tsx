@@ -1,9 +1,11 @@
-import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
+import {Icon, IconType} from "@AppBuilderLib/shared/ui/icon";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
 import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderShared/types/store/shapediverStoreStandardContainers";
 import {
 	IAnchor2d,
@@ -38,20 +40,17 @@ import {
 	useState,
 } from "react";
 import ViewportIconButton, {
+	defaultStyleProps as ViewportIconButtonDefaultStyleProps,
 	ViewportIconButtonProps,
 } from "../../buttons/ViewportIconButton";
-import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
-import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
-import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
-import {useCanvasSize} from "./useCanvasSize";
-import {cleanUnit} from "./utils";
-
-import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
-import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {defaultStyleProps as ViewportIconButtonDefaultStyleProps} from "../../buttons/ViewportIconButton";
 import {defaultStyleProps as ViewportIconsDefaultStyleProps} from "../../ViewportIcons";
 import classes from "../../ViewportIcons.module.css";
+import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
+import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
 import {useAnchorSelection} from "./useAnchorSelection";
+import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
+import {useCanvasSize} from "./useCanvasSize";
+import {cleanUnit, toCanvasPixels} from "./utils";
 
 export interface ViewportAnchorProps {
 	/** If the anchor allows pointer events */
@@ -66,6 +65,10 @@ export interface ViewportAnchorProps {
 	width?: string | number;
 	/** Optional height of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
 	height?: string | number;
+	/** Optional maxWidth of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
+	maxWidth?: string | number;
+	/** Optional maxHeight of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
+	maxHeight?: string | number;
 	/** The unique identifier for the anchor */
 	id: string;
 	/** Option to use Paper component (default: true) */
@@ -163,6 +166,8 @@ export function useAnchorContainer({
 		previewIcon: inputPreviewIcon,
 		width: inputWidth = "var(--app-shell-navbar-width)",
 		height: inputHeight,
+		maxWidth: inputMaxWidth,
+		maxHeight: inputMaxHeight,
 		mobileFallback: inputMobileFallback,
 		useContainer = true,
 		closingStrategy,
@@ -316,7 +321,7 @@ export function useAnchorContainer({
 	useEffect(() => {
 		if (!canvas) return;
 		// don't do this if we use selection properties
-		if (!!selectionProperties) return;
+		if (selectionProperties) return;
 
 		if (canBeHidden && closingStrategy === "emptyClick" && showContent) {
 			const handleClickOutside = (event: MouseEvent) => {
@@ -358,16 +363,25 @@ export function useAnchorContainer({
 		updateShowContent,
 	);
 
-	// Calculate the width and height based on the input values
-	const {width, height} = useMemo(() => {
-		return {
-			width: cleanUnit(inputWidth),
-			height: cleanUnit(inputHeight),
-		};
-	}, [inputWidth, inputHeight]);
-
 	// Get the canvas size
 	const {width: canvasWidth, height: canvasHeight} = useCanvasSize(canvas);
+
+	// Calculate the width and height based on the input values, handling % as canvas-relative
+	const {width, height, maxWidth, maxHeight} = useMemo(() => {
+		return {
+			width: toCanvasPixels(cleanUnit(inputWidth), canvasWidth),
+			height: toCanvasPixels(cleanUnit(inputHeight), canvasHeight),
+			maxWidth: toCanvasPixels(cleanUnit(inputMaxWidth), canvasWidth),
+			maxHeight: toCanvasPixels(cleanUnit(inputMaxHeight), canvasHeight),
+		};
+	}, [
+		inputWidth,
+		inputHeight,
+		inputMaxWidth,
+		inputMaxHeight,
+		canvasWidth,
+		canvasHeight,
+	]);
 
 	// Determine the pointer events style based on the global state and anchor properties
 	const pointerEvents = useMemo(() => {
@@ -539,6 +553,10 @@ export function useAnchorContainer({
 				<ScrollArea
 					h={"100%"}
 					w={"100%"}
+					style={{
+						maxWidth: aboveMobileBreakpoint ? maxWidth : "100%",
+						maxHeight: aboveMobileBreakpoint ? maxHeight : "100%",
+					}}
 					className={shellClasses.addShellWidgetsContainer}
 					type="auto"
 				>

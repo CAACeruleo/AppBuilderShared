@@ -123,6 +123,8 @@ export interface IScrollingApiSetParametersData {
 	terms?: string[];
 	/** The preferred page size to set. */
 	pageSize?: number;
+	/** Optional function for resetting the (potentially cached) state of the scrolling API. */
+	reset?: () => Promise<void>;
 }
 
 /**
@@ -160,7 +162,35 @@ export interface IScrollingApiLoadMoreReply<TItem> {
 }
 
 /**
+ * Data for a message to the parent page.
+ */
+export interface IMessageToParentData {
+	/** Type identifier for the message. */
+	type: string;
+	/** Optional message data. */
+	data?: Record<string, unknown>;
+}
+
+/**
+ * Reply from the parent page to a message.
+ */
+export interface IMessageToParentReply {
+	/** Optional notification to show in response to message. */
+	notification?: {
+		/** Optional type of notification. */
+		type?: string;
+		/** Notification data. */
+		data: {
+			message: string;
+			title?: string;
+		};
+	};
+}
+
+/**
  * Generic e-commerce API actions.
+ * These actions are provided by the connector (e.g. the ShapeDiver Shopify or WooCommerce plugin)
+ * and can be called by to the application consuming the e-commerce functionality (e.g. a configurator).
  */
 export interface IECommerceApiActions {
 	/**
@@ -208,6 +238,58 @@ export interface IECommerceApiActions {
 	scrollingApiLoadMore(
 		data: IScrollingApiLoadMoreData,
 	): Promise<IScrollingApiLoadMoreReply<unknown>>;
+
+	/**
+	 * Send a message to the parent page.
+	 * @param data
+	 */
+	messageToParent(data: IMessageToParentData): Promise<IMessageToParentReply>;
+}
+
+/** The parameter values for a single session. */
+export type ISingleSessionParameterValuesState = {
+	[parameterId: string]: string | number | boolean;
+};
+
+/** The parameter values for multiple sessions. */
+export type IUpdateParameterValuesState = {
+	[namespace: string]: ISingleSessionParameterValuesState;
+};
+
+/**
+ * Data for updating parameter values in the application.
+ */
+export interface IUpdateParameterValuesData {
+	/** The parameter values to set. */
+	state: IUpdateParameterValuesState;
+	/** If true, skip the creation of a history entry after successful execution. */
+	skipHistory?: boolean;
+	/** If true, skip updating the URL after executing the changes. */
+	skipUrlUpdate?: boolean;
+}
+
+/**
+ * Reply from the application to the parent page after updating parameter values.
+ */
+export interface IUpdateParameterValuesReply {
+	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+}
+
+/**
+ * Generic e-commerce API connector actions.
+ * These actions are provided by the application (e.g. a configurator)
+ * and can be called by the connector (e.g. the ShapeDiver Shopify or WooCommerce plugin).
+ */
+export interface IECommerceApiConnectorActions {
+	/**
+	 * Update parameter values of the application.
+	 * @param state
+	 * @param skipHistory
+	 * @param skipUrlUpdate
+	 */
+	updateParameterValues(
+		data: IUpdateParameterValuesData,
+	): Promise<IUpdateParameterValuesReply>;
 }
 
 /**
@@ -220,13 +302,19 @@ export interface IECommerceApi extends IECommerceApiActions {
 	 * Rejected if the peer does not respond within the timeout.
 	 */
 	readonly peerIsReady: Promise<ICrossWindowPeerInfo>;
+
+	/**
+	 * Set the actions to be used for executing requests by the parent page (the connector).
+	 * @param actions
+	 */
+	setApiConnectorActions(actions: IECommerceApiConnectorActions): void;
 }
 
 /**
  * Connector between the e-commerce API (used by the application consuming the
- * e-commerce functionality) and the e-commerce plugin (e.g. the ShapeDiver WooCommerce plugin).
+ * e-commerce functionality) and the e-commerce plugin (e.g. the ShapeDiver Shopify or WooCommerce plugin).
  */
-export interface IECommerceApiConnector {
+export interface IECommerceApiConnector extends IECommerceApiConnectorActions {
 	/**
 	 * Resolved once the peer is ready.
 	 * Rejected if the peer does not respond within the timeout.

@@ -1,8 +1,8 @@
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {ViewportIconButtonEnum} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {
 	IShapeDiverViewportIconsStore,
 	ViewportIconButton,
-	ViewportIconButtonEnum,
 	ViewportIconLayoutItem,
 	ViewportIconLayoutItemEnum,
 	ViewportIconViewportState,
@@ -24,7 +24,14 @@ export const useShapeDiverViewportIconsStore =
 		devtools(
 			(set, get) => ({
 				viewportIcons: {},
+				viewerFullscreen3States: false,
 
+				setViewerFullscreen3States: (value: boolean) =>
+					set(
+						{viewerFullscreen3States: value},
+						false,
+						"setViewerFullscreen3States",
+					),
 				initialize: (viewport: IViewportApi) => {
 					const showCamerasButton =
 						Object.keys(viewport ? viewport.cameras : {}).length >
@@ -39,6 +46,7 @@ export const useShapeDiverViewportIconsStore =
 							? [{type: ViewportIconButtonEnum.Cameras}]
 							: []),
 						{type: ViewportIconButtonEnum.Fullscreen},
+						{type: ViewportIconButtonEnum.Fullscreen3States},
 					]);
 					get().add(viewport.id, [
 						{type: ViewportIconButtonEnum.Undo},

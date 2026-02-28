@@ -1,4 +1,4 @@
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {useDefineGenericParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useDefineGenericParameters";
 import {useParameterStateless} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterStateless";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
@@ -9,7 +9,7 @@ import {
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {ISessionApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useCallback, useContext, useEffect, useMemo, useRef} from "react";
+import {useCallback, useEffect, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /** Prefix used to register custom parameters */
@@ -38,8 +38,8 @@ export function useAppBuilderCustomParameters(props: Props) {
 	const namespace = sessionApi?.id ?? "";
 	const namespaceAppBuilder = namespace + CUSTOM_SESSION_ID_POSTFIX;
 
-	// get the notification context
-	const notifications = useContext(NotificationContext);
+	// get the notification store
+	const notifications = useNotificationStore();
 
 	// default values and current values of the custom parameters
 	const defaultCustomParameterValues = useRef<{[key: string]: any}>({});

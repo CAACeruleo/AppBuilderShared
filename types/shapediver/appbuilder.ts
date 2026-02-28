@@ -1,4 +1,4 @@
-import {IconType} from "@AppBuilderShared/components/ui/Icon";
+import {IconType} from "@AppBuilderLib/shared/ui/icon";
 import {
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,
@@ -8,17 +8,17 @@ import {
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
-import {MantineColor} from "@mantine/core";
-import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
+import {MantineColor, SliderProps} from "@mantine/core";
 import {
 	ISelectionParameterProps,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
 import {
+	Gradient,
 	ICameraOptions,
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
-} from "@shapediver/viewer.viewport";
+} from "@shapediver/viewer.shared.types";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -98,8 +98,7 @@ export interface ISelectParameterSettings {
  * Settings for string parameters visualized as selection parameters.
  * In this case, the selected item is set as the string value of the parameter.
  */
-export interface IStringParameterSelectSettings
-	extends ISelectParameterSettings {
+export interface IStringParameterSelectSettings extends ISelectParameterSettings {
 	/**
 	 * The items to select from.
 	 * In case this is not specified, "source" must be given.
@@ -125,12 +124,10 @@ export interface IStringParameterSettings {
 }
 
 /** Settings for numeric parameters (type "Float", "Int", "Even", "Odd") */
-export interface INumberParameterSettings {
-	/**
-	 * Optional step value for numeric parameters.
-	 */
-	step?: number;
-}
+export interface INumberParameterSettings extends Pick<
+	SliderProps,
+	"marks" | "restrictToMarks" | "step"
+> {}
 
 /** Reference to a parameter (custom or defined by the session) */
 export interface IAppBuilderParameterRef {
@@ -248,7 +245,8 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsSetBrowserLocation
 		| IAppBuilderActionPropsCloseConfigurator
 		| IAppBuilderActionPropsCamera
-		| IAppBuilderActionPropsSound;
+		| IAppBuilderActionPropsSound
+		| IAppBuilderActionPropsMessageToParent;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -262,8 +260,7 @@ export interface IAppBuilderActionPropsCommon {
 }
 
 /** Control referencing an action */
-export interface IAppBuilderControlActionRef
-	extends IAppBuilderActionPropsCommon {
+export interface IAppBuilderControlActionRef extends IAppBuilderActionPropsCommon {
 	/** Embedded action definition. */
 	definition: IAppBuilderActionDefinition;
 	/** In the future we might include a reference to a globally defined action here.  */
@@ -315,28 +312,35 @@ export interface IAppBuilderParameterValueSourcePropsScreenshot {
 		| Partial<PerspectiveCameraProperties>;
 }
 
+export interface IAppBuilderParameterValueSourcePropsCommon {
+	/** Id of the session to use for finding the parameter value source. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced parameter value source (in that order). */
+	name: string;
+}
+
 /**
  * Properties for the "dataOutput" parameter value source.
  * This parameter value source is compatible with parameters of type "String" and "File".
  * For "File" parameters, the content type "application/json" is used.
  */
-export interface IAppBuilderParameterValueSourcePropsDataOutput {
-	/** Id of the session to use for finding the data output. Defaults to the controller session. */
-	sessionId?: string;
-	/** Id or name or displayname of the referenced data output (in that order). */
-	name: string;
-}
+export interface IAppBuilderParameterValueSourcePropsDataOutput extends IAppBuilderParameterValueSourcePropsCommon {}
 
 /**
  * Properties for the "export" parameter value source.
  * This parameter value source is compatible with parameters of type "File".
  * The content type of the exported file must be supported by the "File" parameter.
  */
-export interface IAppBuilderParameterValueSourcePropsExport {
-	/** Id of the session to use for finding the export. Defaults to the controller session. */
-	sessionId?: string;
-	/** Id or name or displayname of the referenced export (in that order). */
-	name: string;
+export interface IAppBuilderParameterValueSourcePropsExport extends IAppBuilderParameterValueSourcePropsCommon {
+	/**
+	 * Parameter set tha is used in the session to get the parameter value source.
+	 * Defined in a parameter dictionary where the key is either the displayname, the name or the id of the parameter.
+	 * The value is the parameter value.
+	 * If none is provided, the default parameter set is used.
+	 **/
+	parameterValues?: {
+		[key: string]: IAppBuilderParameterValueDefinition;
+	};
 }
 
 /**
@@ -348,11 +352,7 @@ export interface IAppBuilderParameterValueSourcePropsExport {
  *
  * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Chunkselectionlogic
  */
-export interface IAppBuilderParameterValueSourcePropsSdtf {
-	/** Id of the session to use for finding the sdtf output. Defaults to the controller session. */
-	sessionId?: string;
-	/** Id or name or displayname of the referenced sdtf output (in that order). */
-	name: string;
+export interface IAppBuilderParameterValueSourcePropsSdtf extends IAppBuilderParameterValueSourcePropsCommon {
 	/**
 	 * Optional, defines chunk to be used.
 	 * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Advancedcase
@@ -375,8 +375,7 @@ export interface IAppBuilderParameterValueSourcePropsSdtf {
  *   * modelStateId: the id of the created model state
  *   * other query parameters defined in the current URL, except for UTM parameters
  */
-export interface IAppBuilderParameterValueSourcePropsModelState
-	extends IAppBuilderActionPropsCreateModelState {
+export interface IAppBuilderParameterValueSourcePropsModelState extends IAppBuilderActionPropsCreateModelState {
 	/**
 	 * Whether the URL shown in the browser shall be updated
 	 * with the newly created modelStateId.
@@ -397,6 +396,13 @@ export interface IAppBuilderParameterValueSourceDefinition {
 		| IAppBuilderParameterValueSourcePropsModelState;
 }
 
+/** Type used for parameter value definitions */
+export type IAppBuilderParameterValueDefinition =
+	| string
+	| number
+	| boolean
+	| IAppBuilderParameterValueSourceDefinition;
+
 /** Types of actions */
 export type AppBuilderActionType =
 	| "createModelState"
@@ -406,7 +412,8 @@ export type AppBuilderActionType =
 	| "setBrowserLocation"
 	| "closeConfigurator"
 	| "camera"
-	| "sound";
+	| "sound"
+	| "messageToParent";
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -441,8 +448,7 @@ export type IAppBuilderLegacyActionPropsCreateModelState =
  * This action triggers a corresponding message to the e-commerce system via the iframe API.
  * A response is awaited and the result is displayed to the user.
  */
-export interface IAppBuilderActionPropsAddToCart
-	extends IAppBuilderActionPropsCreateModelState {
+export interface IAppBuilderActionPropsAddToCart extends IAppBuilderActionPropsCreateModelState {
 	/**
 	 * Identifier of the product to add to the cart.
 	 * Optional, defaults to the product defined by the context.
@@ -554,7 +560,12 @@ export type IAppBuilderPropsAnimateCamera = {
 		/** The target the camera is looking at. */
 		target: [number, number, number];
 	}[];
+	/** Whether to start the animation from the current camera position and target. (default: true) */
+	startFromCurrent?: boolean;
 } & IAppBuilderPropsCameraCommon;
+
+/** Properties of an "assign" action, where the camera is defined by its properties. */
+export type IAppBuilderPropsAssignCamera = IAppBuilderPropsCameraCommon;
 
 /** Properties of a "set" action, where the camera is defined by position and target. */
 export type IAppBuilderPropsSetCamera = {
@@ -568,15 +579,23 @@ export type IAppBuilderPropsSetCamera = {
 export type IAppBuilderPropsResetCamera = IAppBuilderPropsCameraCommon;
 
 /** Properties of a "zoomTo" action. */
-export type IAppBuilderPropsZoomToCamera = IAppBuilderPropsCameraCommon;
+export type IAppBuilderPropsZoomToCamera = {
+	/** The initial position from which to start the zoom. */
+	initialPosition?: [number, number, number];
+	/** The initial target from which to start the zoom. */
+	initialTarget?: [number, number, number];
+	/** Optional name filter to restrict the zoom to specific nodes. */
+	nameFilter?: string[];
+} & IAppBuilderPropsCameraCommon;
 
 /** Properties of a camera action. */
 export type IAppBuilderActionPropsCamera = {
 	/** Type of camera action. */
-	type: "animate" | "set" | "reset" | "zoomTo";
+	type: "animate" | "assign" | "set" | "reset" | "zoomTo";
 	/** Properties of the camera action. */
 	props:
 		| IAppBuilderPropsAnimateCamera
+		| IAppBuilderPropsAssignCamera
 		| IAppBuilderPropsSetCamera
 		| IAppBuilderPropsResetCamera
 		| IAppBuilderPropsZoomToCamera;
@@ -603,6 +622,18 @@ export type IAppBuilderActionPropsSound = {
 export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
 	IAppBuilderActionPropsCommon;
 
+/** Properties of a "messageToParent" action. */
+export interface IAppBuilderActionPropsMessageToParent {
+	/** Type identifier for the message. */
+	type: string;
+	/** Optional message data. */
+	data?: Record<string, unknown>;
+}
+
+/** Properties of legacy a "messageToParent" action. */
+export type IAppBuilderLegacyActionPropsMessageToParent =
+	IAppBuilderActionPropsMessageToParent & IAppBuilderActionPropsCommon;
+
 /** A legacy App Builder action definition. */
 export interface IAppBuilderLegacyActionDefinition {
 	/** Type of the action. */
@@ -616,7 +647,8 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsSetBrowserLocation
 		| IAppBuilderLegacyActionPropsCloseConfigurator
 		| IAppBuilderActionPropsCamera
-		| IAppBuilderLegacyActionPropsSound;
+		| IAppBuilderLegacyActionPropsSound
+		| IAppBuilderLegacyActionPropsMessageToParent;
 }
 
 /** Types of widgets */
@@ -635,6 +667,7 @@ export type AppBuilderWidgetType =
 	| "desktopClientSelection"
 	| "desktopClientOutputs"
 	| "controls"
+	| "form"
 	| "accordionUi"
 	| "savedStates"
 	| "sceneTreeExplorer"
@@ -674,8 +707,7 @@ export interface IAppBuilderWidgetPropsAnchor {
 
 /** Properties of an image widget. */
 export interface IAppBuilderWidgetPropsImage
-	extends IAppBuilderWidgetPropsAnchor,
-		IAppBuilderImageRef {
+	extends IAppBuilderWidgetPropsAnchor, IAppBuilderImageRef {
 	/** Optional reference to alternate text which provides the image. */
 	alt?: string;
 	/**
@@ -696,6 +728,29 @@ export interface IAppBuilderWidgetPropsActions {
 export interface IAppBuilderWidgetPropsControls {
 	/** The controls. */
 	controls?: IAppBuilderControl[];
+}
+
+/** Submit behavior for form widget */
+export enum FormWidgetSubmitBehavior {
+	NONE = "none",
+	RESET = "reset",
+	MESSAGE = "message",
+}
+
+/** Properties of a form widget. */
+export interface IAppBuilderWidgetPropsForm {
+	/** The controls to display in the form. */
+	controls?: IAppBuilderControl[];
+	/** References to parameters which shall be displayed by the form. */
+	parameters?: IAppBuilderParameterRef[];
+	/** Export to trigger on form submission. */
+	export?: IAppBuilderExportRef;
+	/** What to do after successful form submission. */
+	submit?: FormWidgetSubmitBehavior;
+	/** Success message to display (when submit is "message"). */
+	successMessage?: string;
+	/** Error message to display (when submit is "message"). */
+	errorMessage?: string;
 }
 
 /** Enum of the visibility of the attribute visualization. */
@@ -877,6 +932,7 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsDesktopClientSelection
 		| IAppBuilderWidgetPropsDesktopClientOutputs
 		| IAppBuilderWidgetPropsControls
+		| IAppBuilderWidgetPropsForm
 		| IAppBuilderWidgetPropsAccordionUi
 		| IAppBuilderWidgetPropsSavedStates
 		| IAppBuilderWidgetPropsSceneTreeExplorer
@@ -921,6 +977,10 @@ export type AppBuilderAnchorContainerProperties = {
 	width?: string | number;
 	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	height?: string | number;
+	/** Optional maxWidth of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
+	maxWidth?: string | number;
+	/** Optional maxHeight of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
+	maxHeight?: string | number;
 	/** Option to use Paper component (default: true) */
 	useContainer?: boolean;
 	/** Options for the mobile fallback */
@@ -1016,11 +1076,7 @@ export interface IAppBuilderInstanceDefinition {
 	 * If none is provided, the default parameter set is used.
 	 **/
 	parameterValues?: {
-		[key: string]:
-			| string
-			| number
-			| boolean
-			| IAppBuilderParameterValueSourceDefinition;
+		[key: string]: IAppBuilderParameterValueDefinition;
 	};
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
@@ -1219,6 +1275,14 @@ export function isControlsWidget(widget: IAppBuilderWidget): widget is {
 	return widget.type === "controls";
 }
 
+/** assert widget type "form" */
+export function isFormWidget(widget: IAppBuilderWidget): widget is {
+	type: "form";
+	props: IAppBuilderWidgetPropsForm;
+} {
+	return widget.type === "form";
+}
+
 /** assert widget type "accordionUi" */
 export function isAccordionUiWidget(widget: IAppBuilderWidget): widget is {
 	type: "accordionUi";
@@ -1317,6 +1381,16 @@ export function isAnimateCameraAction(
 	return action.type === "animate";
 }
 
+/** assert camera action "assign" */
+export function isAssignCameraAction(
+	action: IAppBuilderActionPropsCamera,
+): action is {
+	type: "assign";
+	props: IAppBuilderPropsAssignCamera;
+} {
+	return action.type === "assign";
+}
+
 /** assert camera action "set" */
 export function isSetCameraAction(
 	action: IAppBuilderActionPropsCamera,
@@ -1352,6 +1426,16 @@ export function isSoundAction(
 	action: IAppBuilderActionDefinition,
 ): action is {type: "sound"; props: IAppBuilderActionPropsSound} {
 	return action.type === "sound";
+}
+
+/** assert action type "messageToParent" */
+export function isMessageToParentAction(
+	action: IAppBuilderActionDefinition,
+): action is {
+	type: "messageToParent";
+	props: IAppBuilderActionPropsMessageToParent;
+} {
+	return action.type === "messageToParent";
 }
 
 /** assert control type "parameter" */
@@ -1514,8 +1598,10 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 /**
  * Settings for a session used by the AppBuilder.
  */
-export interface IAppBuilderSettingsJsonSession
-	extends Omit<IAppBuilderSettingsSession, "modelViewUrl"> {
+export interface IAppBuilderSettingsJsonSession extends Omit<
+	IAppBuilderSettingsSession,
+	"modelViewUrl"
+> {
 	/**
 	 * Override modelViewUrl to be optional.
 	 */

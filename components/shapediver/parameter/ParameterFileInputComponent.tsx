@@ -1,23 +1,28 @@
-import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {
-	ParameterStatusEnum,
-	useStargateParameter,
-} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateParameter";
-import {
-	defaultPropsParameterWrapper,
-	PropsParameter,
-	PropsParameterWrapper,
-} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
 	StargateFileParamPrefix,
 	StargateStatusColorTypeEnum,
-} from "@AppBuilderShared/types/shapediver/stargate";
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {
+	ParameterStatusEnum,
+	useStargateParameter,
+} from "@AppBuilderLib/entities/stargate/model/useStargateParameter";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameterComponent,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,
@@ -35,11 +40,6 @@ import {
 	mapMimeTypeToFileEndings,
 } from "@shapediver/viewer.utils.mime-type";
 import React, {useEffect, useMemo} from "react";
-import StargateInput from "../stargate/StargateInput";
-import {
-	DefaultStargateStyleProps,
-	StargateStyleProps,
-} from "../stargate/stargateShared";
 
 /**
  * Map from status enum to status data.
@@ -120,13 +120,21 @@ export function ParameterFileInputComponentThemeProps(
  * @returns
  */
 export default function ParameterFileInputComponent(
-	props: PropsParameter &
+	props: PropsParameterComponent &
 		Partial<PropsParameterWrapper> &
 		Partial<StyleProps> &
 		Partial<StargateStyleProps>,
 ) {
-	const {definition, value, state, handleChange, onCancel, disabled} =
-		useParameterComponentCommons<File>(props, 0);
+	const {
+		definition,
+		value,
+		state,
+		handleChange,
+		onCancel,
+		disabled,
+		formInputProps,
+		formKey,
+	} = useParameterComponentCommons<File>(props, 0);
 
 	const {
 		cancelTooltipProps,
@@ -263,11 +271,16 @@ export default function ParameterFileInputComponent(
 							label={uploadTooltipProps.label || "Upload file"}
 						>
 							<FileInput
+								key={formKey}
+								{...(formInputProps || {})}
 								accept={fileEndings.join(",")}
 								clearable={false}
-								onChange={(v) =>
-									handleChange(guessMissingMimeType(v || ""))
-								}
+								onChange={(v) => {
+									handleChange(guessMissingMimeType(v || ""));
+									if (formInputProps?.onChange) {
+										formInputProps.onChange(v);
+									}
+								}}
 								leftSection={
 									<Icon iconType={"tabler:upload"} />
 								}
@@ -286,12 +299,17 @@ export default function ParameterFileInputComponent(
 					</Group>
 				) : (
 					<FileInput
+						key={formKey}
+						{...(formInputProps || {})}
 						placeholder="File upload"
 						accept={fileEndings.join(",")}
 						clearable={!!state.execValue}
-						onChange={(v) =>
-							handleChange(guessMissingMimeType(v || ""))
-						}
+						onChange={(v) => {
+							handleChange(guessMissingMimeType(v || ""));
+							if (formInputProps?.onChange) {
+								formInputProps.onChange(v);
+							}
+						}}
 						leftSection={<Icon iconType={"tabler:upload"} />}
 						leftSectionPointerEvents="none"
 						disabled={disabled}

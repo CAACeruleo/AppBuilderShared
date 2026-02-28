@@ -1,5 +1,7 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {IAppBuilderActionPropsCommon} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	Button,
@@ -19,6 +21,7 @@ type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<
 type Props = IAppBuilderActionPropsCommon &
 	ButtonComponentProps & {
 		loading?: boolean;
+		canBeDisabledByParameter?: boolean;
 	};
 
 const defaultStyleProps: Partial<Props> = {
@@ -42,17 +45,34 @@ export function AppBuilderActionComponentThemeProps(
 export default function AppBuilderActionComponent(
 	props: Props & AppBuilderActionComponentThemePropsType,
 ) {
-	const {label, icon, tooltip, onClick, loading, ...rest} = props;
+	const {
+		label,
+		icon,
+		tooltip,
+		onClick,
+		loading,
+		disabled,
+		canBeDisabledByParameter,
+		...rest
+	} = props;
 
 	const buttonProps = useProps(
 		"AppBuilderActionComponent",
 		defaultStyleProps,
-		props,
+		rest,
+	);
+
+	const activeProcess = useShapeDiverStoreProcessManager(
+		(state) => Object.keys(state.processManagers).length > 0,
 	);
 
 	const iconOnly = !label && icon;
 	const useCloseButton = iconOnly && icon === "tabler:x";
 	const _onclick = onClick === null ? undefined : onClick;
+
+	const disabledByParameter = useShapeDiverStoreParameters(
+		(state) => state.hasParameterDisablingOthers,
+	);
 
 	const button = useCloseButton ? (
 		<CloseButton onClick={_onclick} />
@@ -62,9 +82,13 @@ export default function AppBuilderActionComponent(
 			leftSection={
 				!iconOnly && icon ? <Icon iconType={icon} /> : undefined
 			}
-			{...rest}
 			onClick={_onclick}
 			loading={loading}
+			disabled={
+				(activeProcess && !loading) ||
+				disabled ||
+				(disabledByParameter && canBeDisabledByParameter !== false)
+			}
 		>
 			{iconOnly ? <Icon iconType={icon} /> : label}
 		</Button>

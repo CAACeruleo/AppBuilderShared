@@ -1,17 +1,17 @@
-import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
-} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+} from "@AppBuilderLib/types/components/shapediver/propsParameter";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,
@@ -29,14 +29,7 @@ import {
 	SelectionParameterValue,
 	validateSelectionParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
@@ -64,6 +57,7 @@ export default function ParameterSelectionComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
 	const {
+		actions,
 		definition,
 		handleChange,
 		setOnCancelCallback,
@@ -83,8 +77,8 @@ export default function ParameterSelectionComponent(
 	const {addInteractionRequest, removeInteractionRequest} =
 		useShapeDiverStoreInteractionRequestManagement();
 
-	// get the notification context
-	const notifications = useContext(NotificationContext);
+	// get the notification store
+	const notifications = useNotificationStore();
 
 	// settings validation
 	const selectionProps = useMemo(() => {
@@ -107,7 +101,9 @@ export default function ParameterSelectionComponent(
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
 
 	// is the selection active or not?
-	const [selectionActive, setSelectionActive] = useState<boolean>(false);
+	const [selectionActive, setSelectionActive] = useState<boolean>(
+		selectionProps.activeMode === "activeOnStart" ? true : false,
+	);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
 	// reference to manage the interaction request token
@@ -155,7 +151,7 @@ export default function ParameterSelectionComponent(
 		const parsed = parseNames(value);
 		if (JSON.stringify(parsed) !== JSON.stringify(selectedNodeNames))
 			setSelectedNodeNames(parsed);
-	}, [definition]);
+	}, [JSON.stringify(definition)]);
 
 	/**
 	 * Callback function to change the value of the parameter.
@@ -223,6 +219,8 @@ export default function ParameterSelectionComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the selection state changes.
 	 */
 	useEffect(() => {
+		actions.setDisableOtherParameters(selectionActive);
+
 		if (selectionActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
@@ -236,6 +234,7 @@ export default function ParameterSelectionComponent(
 		}
 
 		return () => {
+			actions.setDisableOtherParameters(false);
 			if (interactionRequestTokenRef.current) {
 				removeInteractionRequest(interactionRequestTokenRef.current);
 				interactionRequestTokenRef.current = undefined;

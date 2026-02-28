@@ -6,25 +6,27 @@ import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverSt
 import {
 	IAppBuilder,
 	IAppBuilderInstanceDefinition,
-	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderSettingsSession,
-	isParameterSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Mat4Array} from "@AppBuilderShared/types/shapediver/common";
 import {IParameterStore} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
-	assignMaterialFromDatabase,
 	ISessionApi,
 	ITreeNode,
+	SessionData,
 	SessionOutputData,
 	TreeNode,
 } from "@shapediver/viewer.session";
+import {GlobalAccessObjects} from "@shapediver/viewer.shared.global-access-objects";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useParameterValueSources} from "../parameters/useParameterValueSources";
+import {
+	ParameterValueDefinition,
+	useResolveParameterValues,
+} from "../parameters/useResolveParameterValues";
 
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {useSessions} from "../useSessions";
@@ -138,16 +140,10 @@ export function useAppBuilderInstances(props: Props) {
 	const [parsedAppBuilderInstances, setParsedAppBuilderInstances] = useState<
 		IParsedInstanceDefinition[]
 	>([]);
-	const [sourceData, setSourceData] = useState<{
-		data: {
-			namespace: string;
-			sources: {
-				source: IAppBuilderParameterValueSourceDefinition;
-				parameterId: string;
-			}[];
-		};
+	const [parameterValuesData, setParameterValuesData] = useState<{
+		parameterValues: ParameterValueDefinition[];
 		information: {
-			sourceMap: {
+			parameterValuesMap: {
 				[key: string]: {
 					[key: string]: number;
 				};
@@ -279,28 +275,30 @@ export function useAppBuilderInstances(props: Props) {
 		[],
 	);
 
-	const resolvedParameterValueSources = useParameterValueSources(
-		sourceData?.data,
-	);
+	// Use useResolvedParameters to resolve the parameter values
+	const {values: resolvedParameterValuesArray} = useResolveParameterValues({
+		namespace,
+		parameterValues: parameterValuesData?.parameterValues,
+	});
 
 	// once the pending sources are loaded, we can create the instances
 	useEffect(() => {
-		if (!sourceData || !resolvedParameterValueSources) return;
-		const {sourceMap, instances} = sourceData.information;
+		if (!parameterValuesData || !resolvedParameterValuesArray) return;
+		const {parameterValuesMap, instances} = parameterValuesData.information;
 		if (!instances) return;
 
 		const instancesCopy = JSON.parse(
 			JSON.stringify(instances),
 		) as IAppBuilderInstanceDefinition[];
-		Object.entries(sourceMap ?? {}).forEach(
+		Object.entries(parameterValuesMap ?? {}).forEach(
 			([instanceIndex, instanceSourceMap]) => {
 				Object.entries(instanceSourceMap).forEach(([key, value]) => {
 					if (
-						sourceMap[instanceIndex] !== undefined &&
-						sourceMap[instanceIndex][key] !== undefined
+						parameterValuesMap[instanceIndex] !== undefined &&
+						parameterValuesMap[instanceIndex][key] !== undefined
 					) {
 						const resolvedValue =
-							resolvedParameterValueSources[value];
+							resolvedParameterValuesArray[value];
 
 						const instance = instancesCopy[parseInt(instanceIndex)];
 
@@ -321,8 +319,8 @@ export function useAppBuilderInstances(props: Props) {
 		);
 
 		createParsedInstances(instancesCopy);
-		setSourceData(undefined);
-	}, [resolvedParameterValueSources, createParsedInstances]);
+		setParameterValuesData(undefined);
+	}, [resolvedParameterValuesArray, parameterValuesData]);
 
 	useEffect(() => {
 		if (!instances) return;
@@ -369,17 +367,12 @@ export function useAppBuilderInstances(props: Props) {
 		instancesRef.current = JSON.parse(JSON.stringify(instances));
 		loadedRef.current = false;
 
-		// check if there are parameter value sources that need to be loaded first
-		const sourcesToLoad: {
-			[key: string]: {
-				[key: string]: {
-					source: IAppBuilderParameterValueSourceDefinition;
-					parameterId: string;
-				}[];
-			};
-		} = {};
-
 		const existingNames = new Set<string>();
+		const parameterValuesMap: {
+			[key: string]: {[key: string]: number};
+		} = {};
+		const parameterValuesToLoad: ParameterValueDefinition[] = [];
+
 		instances.forEach((instance, index) => {
 			if (instance.name) {
 				if (existingNames.has(instance.name)) {
@@ -394,79 +387,28 @@ export function useAppBuilderInstances(props: Props) {
 
 			Object.entries(instance.parameterValues ?? {}).forEach(
 				([key, value]) => {
-					if (typeof value === "object" && isParameterSource(value)) {
-						if (!sourcesToLoad[index]) sourcesToLoad[index] = {};
-						if (!sourcesToLoad[index][key])
-							sourcesToLoad[index][key] = [];
-						sourcesToLoad[index][key].push({
-							source: value,
-							parameterId: key,
-						});
-					}
+					const parameterIndex =
+						parameterValuesToLoad.push({
+							id: key,
+							value: value,
+							namespace: instance.sessionId,
+						}) - 1;
+
+					if (!parameterValuesMap[index])
+						parameterValuesMap[index] = {};
+
+					parameterValuesMap[index][key] = parameterIndex;
 				},
 			);
 		});
 
-		if (Object.keys(sourcesToLoad).length > 0) {
-			const sourceData: {
-				source: IAppBuilderParameterValueSourceDefinition;
-				parameterId: string;
-				parameterNamespace?: string;
-			}[] = [];
-			const sourceMap: {
-				[key: string]: {[key: string]: number};
-			} = {};
-			// we now go through all sources that need to be loaded and add them to the pending sources
-			// if a source is used multiple times, we add it only once and store the indices
-			Object.entries(sourcesToLoad).forEach(
-				([instanceIndex, instanceSources]) => {
-					Object.entries(instanceSources).forEach(
-						([key, sources]) => {
-							sources.forEach((source) => {
-								const instanceSessionId =
-									instances[parseInt(instanceIndex)]
-										.sessionId;
-
-								let index = sourceData.findIndex(
-									(s) =>
-										JSON.stringify(s.source) ===
-											JSON.stringify(source.source) &&
-										s.parameterNamespace ===
-											instanceSessionId,
-								);
-								if (index === -1) {
-									index =
-										sourceData.push({
-											source: source.source,
-											parameterId: source.parameterId,
-											parameterNamespace:
-												instanceSessionId,
-										}) - 1;
-								}
-
-								if (!sourceMap[instanceIndex])
-									sourceMap[instanceIndex] = {};
-
-								sourceMap[instanceIndex][key] = index;
-							});
-						},
-					);
-				},
-			);
-
-			setSourceData({
-				data: {
-					namespace,
-					sources: sourceData,
-				},
-				information: {
-					sourceMap,
-					instances,
-				},
-			});
-		} else {
-			createParsedInstances(instances);
-		}
+		setParameterValuesData({
+			parameterValues: parameterValuesToLoad,
+			information: {
+				parameterValuesMap,
+				instances,
+			},
+		});
 	}, [instances, sessions]);
 
 	const sessionUpdateCallback = useCallback((newNode?: ITreeNode) => {
@@ -475,7 +417,6 @@ export function useAppBuilderInstances(props: Props) {
 
 		Object.values(instanceNodesRef.current).forEach((instance) => {
 			if (newNode.hasChild(instance)) return;
-
 			// add the instance to the controller session node
 			newNode.addChild(instance);
 			// update the version of the node
@@ -569,10 +510,12 @@ export function useAppBuilderInstances(props: Props) {
 				getParameter,
 			);
 
+			loadedRef.current = true;
+
 			// wait for all output callbacks to resolve
 			// before we add the instances to the session node
-			Promise.all(outputCallbackPromises).then(() => {
-				addInstanceToSceneTree(
+			Promise.all(outputCallbackPromises).then(async () => {
+				await addInstanceToSceneTree(
 					newInstances,
 					instanceNodesRef.current,
 					sessionNodeRef.current,
@@ -604,7 +547,6 @@ export function useAppBuilderInstances(props: Props) {
 						removeCustomizationResult(instanceId);
 					},
 				);
-				loadedRef.current = true;
 			});
 		});
 
@@ -630,7 +572,7 @@ export function useAppBuilderInstances(props: Props) {
  * @param instances
  * @param sessionNode
  */
-const addInstanceToSceneTree = (
+const addInstanceToSceneTree = async (
 	newInstances: {
 		[key: string]: {
 			node: ITreeNode;
@@ -651,8 +593,21 @@ const addInstanceToSceneTree = (
 			}
 		});
 
+		const promises: Promise<void>[] = [];
+
 		Object.values(newInstances).forEach((instance) => {
 			if (sessionNode!.hasChild(instance.node)) return;
+
+			// if there is a material database, we need to apply it
+			// we do this at the latest possible stage to avoid unnecessary calls to the material database
+			// as the material database may be updated during the instance creation process
+			if (GlobalAccessObjects.instance.assignMaterialFromDatabase) {
+				promises.push(
+					GlobalAccessObjects.instance.assignMaterialFromDatabase(
+						instance.node,
+					),
+				);
+			}
 
 			// add the instance to the controller session node
 			sessionNode!.addChild(instance.node);
@@ -660,6 +615,8 @@ const addInstanceToSceneTree = (
 			// this won't be triggered as long as a process is running
 			sessionNode!.updateVersion();
 		});
+
+		await Promise.all(promises);
 	}
 };
 
@@ -745,7 +702,7 @@ const createInstance = (
 	 * The transformations are added to the instance node as children.
 	 * The instance node is then added to the controller session node.
 	 */
-	const promise = creationPromise.then((node) => {
+	const promise = creationPromise.then(async (node) => {
 		// send a progress update
 		progressCallback({
 			percentage: 0.45,
@@ -758,6 +715,11 @@ const createInstance = (
 		const transformations = instance.transformations ?? [
 			[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
 		];
+
+		// add the session data to the instance node
+		const sessionData = node.data.find((d) => d instanceof SessionData);
+		if (sessionData && !instanceNode.hasData(sessionData))
+			instanceNode.addData(sessionData);
 
 		// once the node is created, add the transformations
 		transformations.forEach((transformation, index) => {
@@ -782,10 +744,6 @@ const createInstance = (
 
 			instanceNode.addChild(transformationNode);
 		});
-
-		// if there is a material database, we need to apply it
-		if (assignMaterialFromDatabase)
-			assignMaterialFromDatabase(instanceNode);
 
 		// send a progress update
 		progressCallback({

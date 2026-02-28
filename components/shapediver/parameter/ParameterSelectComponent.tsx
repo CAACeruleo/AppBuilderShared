@@ -1,11 +1,11 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
-	PropsParameter,
+	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
@@ -16,7 +16,7 @@ import {validateSelectParameterSettings} from "@AppBuilderShared/types/shapedive
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
-import React, {useCallback, useContext, useMemo} from "react";
+import React, {useCallback, useMemo} from "react";
 import MultiSelectComponent from "./multiselect/MultiSelectComponent";
 import SelectComponent, {
 	SelectComponentSettings,
@@ -54,12 +54,19 @@ export function ParameterSelectComponentThemeProps(
  * @returns
  */
 export default function ParameterSelectComponent(
-	props: PropsParameter &
+	props: PropsParameterComponent &
 		ParameterSelectComponentThemePropsType &
 		Partial<PropsParameterWrapper>,
 ) {
-	const {definition, value, handleChange, onCancel, disabled} =
-		useParameterComponentCommons<string>(props, 0);
+	const {
+		definition,
+		value,
+		handleChange,
+		onCancel,
+		disabled,
+		formInputProps,
+		formKey,
+	} = useParameterComponentCommons<string>(props, 0);
 
 	// theme properties
 	const {componentSettings} = useProps(
@@ -88,8 +95,8 @@ export default function ParameterSelectComponent(
 		definition.id,
 	]);
 
-	// get the notification context
-	const notifications = useContext(NotificationContext);
+	// get the notification store
+	const notifications = useNotificationStore();
 
 	// get component settings from the parameter definition
 	const definitionSettings = useMemo(() => {
@@ -180,6 +187,8 @@ export default function ParameterSelectComponent(
 	const inputComponent =
 		definition.visualization === PARAMETER_VISUALIZATION.CHECKLIST ? (
 			<MultiSelectComponent
+				key={formKey}
+				{...(formInputProps || {})}
 				value={
 					filteredValue
 						? filteredValue
@@ -208,24 +217,39 @@ export default function ParameterSelectComponent(
 			/>
 		) : (
 			<SelectComponent
+				key={formKey}
+				{...(formInputProps || {})}
 				value={
 					filteredValue ? uniqueChoices[+filteredValue] : undefined
 				}
-				onChange={(v) =>
+				onChange={(v) => {
 					handleChange(
 						uniqueChoicesIncludingHidden.indexOf(v!) + "",
 						undefined,
 						restoreFocus,
-					)
-				}
+					);
+					if (formInputProps?.onChange) {
+						formInputProps.onChange(v);
+					}
+				}}
 				items={uniqueChoices}
 				disabled={disabled}
 				type={settings.type}
 				itemData={settings.itemData}
 				settings={settings.settings}
 				inputContainer={inputContainer}
-				onFocus={onFocusHandler}
-				onBlur={onBlurHandler}
+				onFocus={(e) => {
+					onFocusHandler(e);
+					if (formInputProps?.onFocus) {
+						formInputProps.onFocus(e);
+					}
+				}}
+				onBlur={() => {
+					onBlurHandler();
+					if (formInputProps?.onBlur) {
+						formInputProps.onBlur();
+					}
+				}}
 				searchable={settings.searchable}
 				limit={settings.limit}
 				height={settings.height}

@@ -1,8 +1,8 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
@@ -20,14 +20,7 @@ import {
 	IDraggingParameterProps,
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
@@ -58,6 +51,7 @@ export default function ParameterDraggingComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
 	const {
+		actions,
 		definition,
 		handleChange,
 		setOnCancelCallback,
@@ -78,8 +72,8 @@ export default function ParameterDraggingComponent(
 	const {addInteractionRequest, removeInteractionRequest} =
 		useShapeDiverStoreInteractionRequestManagement();
 
-	// get the notification context
-	const notifications = useContext(NotificationContext);
+	// get the notification store
+	const notifications = useNotificationStore();
 
 	// settings validation
 	const draggingProps = useMemo(() => {
@@ -99,7 +93,9 @@ export default function ParameterDraggingComponent(
 	}, [definition.settings]);
 
 	// is the dragging active or not?
-	const [draggingActive, setDraggingActive] = useState<boolean>(false);
+	const [draggingActive, setDraggingActive] = useState<boolean>(
+		draggingProps.activeMode === "activeOnStart" ? true : false,
+	);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
 	// parsed execValue
@@ -139,7 +135,7 @@ export default function ParameterDraggingComponent(
 			setDraggedNodes([]);
 			lastConfirmedValueRef.current = [];
 		}
-	}, [definition]);
+	}, [JSON.stringify(definition)]);
 
 	useEffect(() => {
 		const parsed = parseDraggedNodes(state.uiValue);
@@ -214,6 +210,8 @@ export default function ParameterDraggingComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the dragging state changes.
 	 */
 	useEffect(() => {
+		actions.setDisableOtherParameters(draggingActive);
+
 		if (draggingActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
@@ -227,6 +225,7 @@ export default function ParameterDraggingComponent(
 		}
 
 		return () => {
+			actions.setDisableOtherParameters(false);
 			if (interactionRequestTokenRef.current) {
 				removeInteractionRequest(interactionRequestTokenRef.current);
 				interactionRequestTokenRef.current = undefined;

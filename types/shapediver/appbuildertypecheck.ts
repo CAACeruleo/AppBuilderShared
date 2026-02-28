@@ -1,16 +1,19 @@
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-visualization";
 import {
 	ISelectionParameterPropsJsonSchema,
 	PARAMETER_TYPE,
 	PARAMETER_VISUALIZATION,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
-import {CAMERA_TYPE} from "@shapediver/viewer.viewport";
+import {
+	ATTRIBUTE_VISUALIZATION,
+	CAMERA_TYPE,
+} from "@shapediver/viewer.shared.types";
 import {z} from "zod";
 import {
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
+	FormWidgetSubmitBehavior,
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
@@ -77,6 +80,15 @@ export const validateStringParameterSettings = (value: any) => {
 // Zod type definition for INumberParameterSettings
 const INumberParameterSettingsSchema = z.object({
 	step: z.number().positive().optional(),
+	marks: z
+		.array(
+			z.object({
+				value: z.number(),
+				label: z.string().optional(),
+			}),
+		)
+		.optional(),
+	restrictToMarks: z.boolean().optional(),
 });
 
 export const validateNumberParameterSettings = (value: any) => {
@@ -195,6 +207,20 @@ const IAppBuilderParameterValueSourcePropsDataOutputSchema = z.object({
 const IAppBuilderParameterValueSourcePropsExportSchema = z.object({
 	sessionId: z.string().optional(),
 	name: z.string(),
+	parameterValues: z
+		.record(
+			z
+				.string()
+				.or(z.number())
+				.or(z.boolean())
+				.or(
+					z.lazy(
+						(): z.ZodTypeAny =>
+							IAppBuilderParameterValueSourceDefinitionSchema,
+					),
+				),
+		)
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsSdtf
@@ -363,7 +389,16 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 							target: z.array(z.number()).length(3),
 						}),
 					),
+					startFromCurrent: z.boolean().optional(),
 				})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.object({
+			type: z.literal("assign"),
+			props: z
+				.object({})
 				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
 		})
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
@@ -390,7 +425,11 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 		.object({
 			type: z.literal("zoomTo"),
 			props: z
-				.object({})
+				.object({
+					initialPosition: z.array(z.number()).length(3).optional(),
+					initialTarget: z.array(z.number()).length(3).optional(),
+					nameFilter: z.array(z.string()).optional(),
+				})
 				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
 		})
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
@@ -406,8 +445,20 @@ const IAppBuilderActionPropsSoundSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsSetParameterValues
-const IAppBuilderLegacyActionPropsSound =
+const IAppBuilderLegacyActionPropsSoundSchema =
 	IAppBuilderActionPropsSoundSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsMessageToParent
+const IAppBuilderActionPropsMessageToParentSchema = z.object({
+	type: z.string(),
+	data: z.record(z.unknown()).optional(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsMessageToParent
+const IAppBuilderLegacyActionPropsMessageToParentSchema =
+	IAppBuilderActionPropsMessageToParentSchema.extend(
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
@@ -443,7 +494,11 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal("sound"),
-		props: IAppBuilderLegacyActionPropsSound,
+		props: IAppBuilderLegacyActionPropsSoundSchema,
+	}),
+	z.object({
+		type: z.literal("messageToParent"),
+		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
 	}),
 ]);
 
@@ -525,6 +580,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("sound"),
 		props: IAppBuilderActionPropsSoundSchema,
+	}),
+	z.object({
+		type: z.literal("messageToParent"),
+		props: IAppBuilderActionPropsMessageToParentSchema,
 	}),
 ]);
 
@@ -788,6 +847,16 @@ const IAppBuilderWidgetPropsControlsSchema = z.object({
 	controls: z.array(IAppBuilderControlSchema),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsForm
+const IAppBuilderWidgetPropsFormSchema = z.object({
+	controls: z.array(IAppBuilderControlSchema).optional(),
+	parameters: z.array(IAppBuilderParameterRefSchema).optional(),
+	export: IAppBuilderExportRefSchema.optional(),
+	submit: z.nativeEnum(FormWidgetSubmitBehavior).optional(),
+	successMessage: z.string().optional(),
+	errorMessage: z.string().optional(),
+});
+
 // Zod type definition for IAppBuilderWidgetPropsAccordionUi
 const IAppBuilderWidgetPropsAccordionUiSchema = z.object({
 	items: z.array(
@@ -889,6 +958,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 		props: IAppBuilderWidgetPropsControlsSchema,
 	}),
 	z.object({
+		type: z.literal("form"),
+		props: IAppBuilderWidgetPropsFormSchema,
+	}),
+	z.object({
 		type: z.literal("accordionUi"),
 		props: IAppBuilderWidgetPropsAccordionUiSchema,
 	}),
@@ -925,6 +998,8 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	previewIcon: z.string().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
+	maxWidth: z.union([z.string(), z.number()]).optional(),
+	maxHeight: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
 	useCloseButton: z.boolean().optional(),
 	hideable: z.boolean().optional(),
@@ -959,6 +1034,8 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
+	maxWidth: z.union([z.string(), z.number()]).optional(),
+	maxHeight: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
 	selectionProperties:
 		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,

@@ -27,22 +27,28 @@ export interface IPlatformClientRef {
  */
 export interface IShapeDiverStorePlatform {
 	/**
-	 * Reference to the platform client.
-	 * The client may be authenticated or not, @see {@link IPlatformClientRef.jwtToken}.
-	 */
-	clientRef: IPlatformClientRef | undefined;
-
-	/**
 	 * Authenticate the platform client.
 	 * In case the application is not running on the platform, this function returns undefined.
 	 * @param redirect Redirect for authentication in case using a refresh token did not work. Defaults to true.
 	 * @param forceReAuthenticate Force re-authentication, do not use cached token. Defaults to false.
-	 * @returns The authenticated platform client.
+	 * @returns The platform client, which may be unauthenticated if redirect is false, @see {@link IPlatformClientRef.jwtToken}.
 	 */
 	authenticate: (
 		redirect?: boolean,
 		forceReAuthenticate?: boolean,
 	) => Promise<IPlatformClientRef | undefined>;
+
+	/**
+	 * Wrapper for executing functions requiring an authenticated platform client.
+	 * Tries to re-authenticate in case the current authentication is invalid.
+	 * @param cb The callback to execute with an authenticated platform client.
+	 * @param redirect Redirect for authentication in case re-authentication is required. Defaults to true.
+	 * @returns The result of the callback.
+	 */
+	authWrapper: <T>(
+		cb: (clientRef: IPlatformClientRef) => Promise<T>,
+		redirect?: boolean,
+	) => Promise<T>;
 
 	/**
 	 * Information about the current user.
@@ -78,8 +84,7 @@ export enum PlatformCacheKeyEnum {
 /**
  * Extended store for basic platform interaction, including functionality used by the store implementation
  */
-export interface IShapeDiverStorePlatformExtended
-	extends IShapeDiverStorePlatform {
+export interface IShapeDiverStorePlatformExtended extends IShapeDiverStorePlatform {
 	/** Cache for diverse stuff */
 	genericCache: {[key: string]: any};
 

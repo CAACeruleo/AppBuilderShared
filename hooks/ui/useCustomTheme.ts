@@ -1,15 +1,20 @@
+import {DesktopClientPanelThemeProps} from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
+import {StargateInputThemeProps} from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {StargateSharedThemeProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip";
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
 import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderControlsWidgetComponent";
+import {AppBuilderFormWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderFormWidgetComponent";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
 import {AppBuilderSavedStatesWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderSavedStatesWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
-import {NumberAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
-import {StringAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
 import {ExportButtonComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportButtonComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {OutputChunkLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputChunkLabelComponent";
@@ -22,21 +27,14 @@ import {ParameterStargateComponentThemeProps} from "@AppBuilderShared/components
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
 import {SelectFullWidthCardsComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectFullWidthCards";
 import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectGridComponent";
-import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
-import {StargateInputThemeProps} from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
-import {StargateSharedThemeProps} from "@AppBuilderShared/components/shapediver/stargate/stargateShared";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
-import {ViewportAnchor2dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor2d";
-import {ViewportAnchor3dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor3d";
 import {ViewportIconButtonThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButton";
 import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButtonDropdown";
 import {HintProps} from "@AppBuilderShared/components/ui/Hint";
-import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
-import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
 import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
@@ -48,6 +46,7 @@ import {AppBuilderTemplateSelectorThemeProps} from "@AppBuilderShared/pages/temp
 import {AppBuilderVerticalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
 import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
+import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	ViewportBrandingThemeProps,
 	ViewportComponentThemeProps,
@@ -90,6 +89,7 @@ import {
 	mergeThemeOverrides,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
+import {useContext} from "react";
 import {AppBuilderStackUiWidgetComponentThemeProps} from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
 import {MultiSelectCheckboxesProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectCheckboxesComponent";
 import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
@@ -162,6 +162,8 @@ interface Props {
 export const useCustomTheme = (props: Props = {}) => {
 	const {globalThemeOverrides = {}} = props;
 
+	const componentContext = useContext(ComponentContext);
+
 	/**
 	 * Padding value used in various places.
 	 * Note that there is no need to use this global value, this is
@@ -169,7 +171,6 @@ export const useCustomTheme = (props: Props = {}) => {
 	 * feel free to set individual values.
 	 */
 	const padding: StyleProp<MantineSpacing> = "xs";
-
 	/**
 	 * Mantine theme object: @see https://mantine.dev/theming/theme-object/
 	 * The theme can be used to set global default properties, and
@@ -565,6 +566,47 @@ export const useCustomTheme = (props: Props = {}) => {
 					// elementPaperProps: {
 					// 	shadow: "none",
 					// },
+				}),
+			/**
+			 * AppBuilderFormWidgetComponent
+			 *
+			 * Form widget with parameter controls, export submission, and message display.
+			 * Supports form validation, parameter reset, and success/error message display.
+			 * When submit="message", displays a reset button at top right to fill the form again.
+			 */
+			AppBuilderFormWidgetComponent:
+				AppBuilderFormWidgetComponentThemeProps({
+					// stackProps: {
+					//   gap: 0,
+					// },
+					// formPaperProps: {
+					//   withBorder: true,
+					//   shadow: "none",
+					//   p: 0,
+					// },
+					// elementPaperProps: {
+					//   withBorder: false,
+					//   shadow: "none",
+					//   px: 0,
+					//   pt: 0,
+					//   pb: "sm",
+					// },
+					// exportPaperProps: {
+					//   withBorder: false,
+					//   shadow: "none",
+					//   px: 0,
+					//   py: 0,
+					//   mt: "xs",
+					// },
+					// messagePaperProps: {
+					//   shadow: "sm",
+					//   p: "md",
+					// },
+					// resetButtonProps: {
+					//   variant: "subtle",
+					//   size: "sm",
+					// },
+					// resetMessage: "Reset form",
 				}),
 			AppBuilderContainer: AppBuilderContainerThemeProps({
 				// orientation: "unspecified"
@@ -991,7 +1033,10 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 * Defaults for number attributes.
 			 */
-			NumberAttribute: NumberAttributeThemeProps({}),
+			NumberAttribute:
+				componentContext.widgets?.attributeVisualization.themeProps?.NumberAttribute(
+					{},
+				),
 			/**
 			 * OutputChunkLabelComponent
 			 *
@@ -1130,7 +1175,10 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 * Defaults for string attributes.
 			 */
-			StringAttribute: StringAttributeThemeProps({}),
+			StringAttribute:
+				componentContext.widgets?.attributeVisualization.themeProps?.StringAttribute(
+					{},
+				),
 			/**
 			 * TooltipWrapper
 			 *
@@ -1182,7 +1230,9 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 *
 			 */
-			ViewportAnchor2d: ViewportAnchor2dThemeProps({
+			ViewportAnchor2d: componentContext.viewportAnchors?.[
+				AppBuilderContainerNameType.Anchor2d
+			].themeProps({
 				// anchorPaperProps: {
 				// 	style: {
 				// 		...defaultStyleProps.style,
@@ -1212,7 +1262,9 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 *
 			 */
-			ViewportAnchor3d: ViewportAnchor3dThemeProps({
+			ViewportAnchor3d: componentContext.viewportAnchors?.[
+				AppBuilderContainerNameType.Anchor3d
+			].themeProps({
 				// anchorPaperProps: {
 				// 	style: {
 				// 		...defaultStyleProps.style,
@@ -1266,11 +1318,27 @@ export const useCustomTheme = (props: Props = {}) => {
 					// },
 					// buttonProps: {
 					// 	variant: "default",
+					// },
+					// acceptButtonProps: {
 					// 	style: {
+					// 		...ViewportTransparentBackgroundStyle,
 					// 		boxShadow: "var(--mantine-shadow-md)",
-					// 		backgroundColor: alpha("var(--mantine-color-body)", 0.5),
-					// 		backdropFilter: "blur(10px)",
 					// 		border: "none",
+					// 		backgroundColor: alpha(
+					// 			"var(--mantine-primary-color-filled)",
+					// 			0.5,
+					// 		),
+					// 	},
+					// },
+					// rejectButtonProps: {
+					// 	style: {
+					// 		...ViewportTransparentBackgroundStyle,
+					// 		boxShadow: "var(--mantine-shadow-md)",
+					// 		border: "none",
+					// 		backgroundColor: alpha(
+					// 			"var(--mantine-color-red-filled)",
+					// 			0.5,
+					// 		),
 					// 	},
 					// },
 					// iconProps: {},
@@ -1307,6 +1375,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// enableArBtn: true,
 				// enableCamerasBtn: true,
 				// enableFullscreenBtn: true,
+				// enableFullscreenBtn3States: false,
 				// enableZoomBtn: true,
 				// enableHistoryMenuButton: true,
 				// viewportOverlayProps: {

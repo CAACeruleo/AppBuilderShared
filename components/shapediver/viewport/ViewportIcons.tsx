@@ -1,5 +1,5 @@
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControls";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
@@ -11,10 +11,10 @@ import {
 } from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {
+	ViewportIconButtonEnum,
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {ViewportIconButtonEnum} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -55,7 +55,8 @@ export const defaultStyleProps: ViewportIconsOptionalProps = {
 	enableResetButton: true,
 	enableArBtn: true,
 	enableCamerasBtn: true,
-	enableFullscreenBtn: true,
+	enableFullscreenBtn: false,
+	enableFullscreenBtn3States: true,
 	enableZoomBtn: true,
 	enableHistoryMenuButton: undefined,
 };
@@ -66,6 +67,7 @@ export type ShowButtons = {
 	ar?: boolean;
 	cameras?: boolean;
 	fullscreen?: boolean;
+	fullscreen3States?: boolean;
 	zoom?: boolean;
 	historyMenu?: boolean;
 };
@@ -101,6 +103,7 @@ export default function ViewportIcons(
 		enableArBtn,
 		enableCamerasBtn,
 		enableFullscreenBtn,
+		enableFullscreenBtn3States,
 		enableZoomBtn,
 		enableHistoryMenuButton,
 	} = useProps("ViewportIcons", defaultStyleProps, rest);
@@ -112,7 +115,10 @@ export default function ViewportIcons(
 			reset: enableResetButton,
 			ar: enableArBtn,
 			cameras: enableCamerasBtn,
-			fullscreen: enableFullscreenBtn,
+			fullscreen: enableFullscreenBtn3States
+				? false
+				: enableFullscreenBtn,
+			fullscreen3States: enableFullscreenBtn3States,
 			zoom: enableZoomBtn,
 			historyMenu:
 				enableImportExportButtons !== undefined ||
@@ -128,6 +134,7 @@ export default function ViewportIcons(
 			enableArBtn,
 			enableCamerasBtn,
 			enableFullscreenBtn,
+			enableFullscreenBtn3States,
 			enableZoomBtn,
 			enableHistoryMenuButton,
 			enableImportExportButtons,
@@ -264,6 +271,13 @@ export default function ViewportIcons(
 					if (!showButtons.fullscreen) return null;
 					return React.createElement(ButtonComponent, {
 						key: "fullscreen",
+						fullscreenId,
+						...commonProps,
+					});
+				case ViewportIconButtonEnum.Fullscreen3States:
+					if (!showButtons.fullscreen3States) return null;
+					return React.createElement(ButtonComponent, {
+						key: "fullscreen3States",
 						fullscreenId,
 						...commonProps,
 					});
