@@ -18,6 +18,13 @@ const templateMap: TemplateMapType = {
 	grid: AppBuilderGridTemplatePage,
 };
 
+function resolveTemplateName(value: unknown): AppBuilderTemplateType {
+	if (value === "appshell" || value === "grid") {
+		return value;
+	}
+	return "appshell";
+}
+
 interface StyleProps {
 	/** template to use */
 	template: AppBuilderTemplateType;
@@ -78,7 +85,8 @@ export default function AppBuilderTemplateSelector(
 		bottom: showContainer(isBottomDisplayed) ? bottom : undefined,
 	};
 
-	const Template = templateMap[template];
+	const resolvedTemplate = resolveTemplateName(template);
+	const Template = templateMap[resolvedTemplate];
 
 	return (
 		<>
@@ -115,7 +123,7 @@ export default function AppBuilderTemplateSelector(
 			) : (
 				<></>
 			)}
-			<AppBuilderTemplateContext.Provider value={{name: template}}>
+			<AppBuilderTemplateContext.Provider value={{name: resolvedTemplate}}>
 				<Template {...mainNodes} {...otherNodes} />
 			</AppBuilderTemplateContext.Provider>
 		</>

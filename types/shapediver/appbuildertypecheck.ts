@@ -18,6 +18,13 @@ import {
 	SelectComponentType,
 } from "./appbuilder";
 
+// Some viewer.session builds do not expose ISelectionParameterPropsJsonSchema.
+// Keep schema validation resilient instead of crashing on startup.
+const SafeSelectionParameterPropsJsonSchema: z.ZodTypeAny =
+	typeof (ISelectionParameterPropsJsonSchema as any)?.optional === "function"
+		? (ISelectionParameterPropsJsonSchema as unknown as z.ZodTypeAny)
+		: z.object({}).passthrough();
+
 // Zod type definition for SelectComponentType
 const selectComponentTypes = [
 	"buttonflex",
@@ -1004,7 +1011,7 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	useCloseButton: z.boolean().optional(),
 	hideable: z.boolean().optional(),
 	selectionProperties:
-		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
+		SafeSelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
@@ -1038,7 +1045,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	maxHeight: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
 	selectionProperties:
-		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
+		SafeSelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
