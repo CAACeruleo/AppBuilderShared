@@ -1,7 +1,7 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {ActionIcon, Loader, Modal, Text, Title} from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
+import {IconAugmentedReality} from "@tabler/icons-react";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
 import classes from "../ViewportIcons.module.css";
@@ -24,6 +24,7 @@ export default function ArButton({
 	const [arLink, setArLink] = useState("");
 	const [isArLoading, setIsArLoading] = useState(false);
 	const [isModalArError, setIsModalArError] = useState("");
+	const disabled = isArLoading || !viewport;
 
 	const isViewableInAr = viewport ? viewport.viewableInAR() : false;
 
@@ -69,16 +70,17 @@ export default function ArButton({
 			<TooltipWrapper label="View in AR">
 				<ActionIcon
 					onClick={handleArClick}
-					disabled={isArLoading}
+					disabled={disabled}
 					className={classes.ViewportIcon}
 					size={size}
-					variant={isViewableInAr ? variantDisabled : variant}
+					variant={disabled ? variantDisabled : variant}
 					aria-label="View in AR"
 					style={iconStyle}
 				>
-					<Icon
-						iconType={"tabler:augmented-reality"}
-						color={isArLoading ? colorDisabled : color}
+					<IconAugmentedReality
+						size="1.5rem"
+						stroke={1}
+						color={disabled ? colorDisabled : color}
 					/>
 				</ActionIcon>
 			</TooltipWrapper>

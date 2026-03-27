@@ -31,6 +31,10 @@ export interface ViewportIconsProps {
 
 export interface ViewportIconsOptionalProps {
 	/**
+	 * Keep the viewport controls visible instead of auto-hiding them.
+	 */
+	alwaysVisible?: boolean;
+	/**
 	 * Style properties for the container
 	 */
 	style?: React.CSSProperties;

@@ -254,6 +254,36 @@ export default function AppBuilderPage(props: Partial<Props>) {
 								{ViewportIcons && (
 									<ViewportIcons
 										namespace={namespace}
+										alwaysVisible
+										color="rgba(255, 255, 255, 0.92)"
+										colorDisabled="rgba(255, 255, 255, 0.38)"
+										variant="transparent"
+										variantDisabled="transparent"
+										viewportOverlayProps={{
+											position:
+												OverlayPosition.TOP_MIDDLE,
+											offset: "0.75rem",
+										}}
+										paperProps={{
+											py: 4,
+											px: 6,
+											shadow: "md",
+											style: {
+												backgroundColor:
+													"rgba(32, 33, 36, 0.82)",
+												backdropFilter:
+													"blur(12px)",
+												border:
+													"1px solid rgba(255, 255, 255, 0.08)",
+												borderRadius:
+													"var(--mantine-radius-md)",
+											},
+										}}
+										dividerProps={{
+											orientation: "vertical",
+											color:
+												"rgba(255, 255, 255, 0.12)",
+										}}
 										hideJsonMenu={
 											sessionSettings?.hideJsonMenu
 										}

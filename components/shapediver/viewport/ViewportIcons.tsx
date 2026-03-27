@@ -40,6 +40,7 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	enableFullscreenBtn: true,
 	enableZoomBtn: true,
 	enableHistoryMenuButton: true,
+	alwaysVisible: false,
 	color: undefined,
 	colorDisabled: undefined,
 	variant: IconProps.variant,
@@ -92,6 +93,7 @@ export default function ViewportIcons(
 		enableImportExportButtons: enableImportExportButtonsStyleProp,
 		enableResetButton: enableResetButtonStyleProp,
 		enableHistoryMenuButton: enableHistoryMenuButtonStyleProp,
+		alwaysVisible,
 		color,
 		colorDisabled,
 		variant,
@@ -110,6 +112,7 @@ export default function ViewportIcons(
 		useShallow((state) => state.viewports[viewportId]),
 	);
 	const {showControls, setIsHoveringControls} = useViewportControls();
+	const controlsVisible = alwaysVisible || showControls;
 
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
@@ -144,12 +147,12 @@ export default function ViewportIcons(
 	);
 
 	const buttonsDisabled = hasPendingChanges;
-	const isArEnabled = viewport ? viewport.enableAR : false;
+	const showArButton = Boolean(viewport);
 
 	const ViewerIconsGroup = useMemo(
 		() => (
 			<>
-				{enableArBtn && isArEnabled && (
+				{enableArBtn && showArButton && (
 					<ArButton
 						viewport={viewport}
 						color={color}
@@ -200,7 +203,7 @@ export default function ViewportIcons(
 		),
 		[
 			enableArBtn,
-			isArEnabled,
+			showArButton,
 			enableZoomBtn,
 			enableFullscreenBtn,
 			enableCamerasBtn,
@@ -278,7 +281,7 @@ export default function ViewportIcons(
 
 	const showHistoryDivider = useMemo(() => {
 		const hasViewerIcons =
-			(enableArBtn && isArEnabled) ||
+			(enableArBtn && showArButton) ||
 			enableZoomBtn ||
 			enableFullscreenBtn ||
 			enableCamerasBtn;
@@ -289,7 +292,7 @@ export default function ViewportIcons(
 		return hasViewerIcons && hasHistoryButtons;
 	}, [
 		enableArBtn,
-		isArEnabled,
+		showArButton,
 		enableZoomBtn,
 		enableFullscreenBtn,
 		enableCamerasBtn,
@@ -374,7 +377,7 @@ export default function ViewportIcons(
 	return (
 		<ViewportOverlayWrapper {...viewportOverlayProps}>
 			<Transition
-				mounted={showControls}
+				mounted={controlsVisible}
 				{...transitionProps}
 				onEntered={() => setIconsVisible(true)}
 				onExit={() => setIconsVisible(false)}
