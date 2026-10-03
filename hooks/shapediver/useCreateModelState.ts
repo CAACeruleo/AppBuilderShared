@@ -76,6 +76,7 @@ export function useCreateModelState(props: Props) {
 		): Promise<{
 			/** Id of created model state. */
 			modelStateId?: string;
+			parameterSnapshot?: Record<string, unknown>;
 			/** Data URL of the created screenshot or href to a specified image (either via export or directly) */
 			screenshot?: string;
 			/** Model view URL of the Geometry Backend system the model state was created on. */
@@ -118,6 +119,8 @@ export function useCreateModelState(props: Props) {
 					{} as {[key: string]: unknown},
 				);
 
+			const parameterSnapshot = JSON.parse(JSON.stringify(parameterValues)) as Record<string, unknown>;
+
 			// create the image for the model state (if includeImage is true)
 			// if an image ref is provided, use that (unless includeImage is false)
 			// if the image ref points to an export, try to get the export from the session and request it
@@ -155,7 +158,7 @@ export function useCreateModelState(props: Props) {
 
 			const modelStateId = sessionApi
 				? await sessionApi.createModelState(
-						parameterValues,
+						parameterSnapshot,
 						true, // <-- omitSessionParameterValues
 						modelStateImage, // <-- screenshot or provided image
 						data, // <-- custom data
@@ -174,6 +177,7 @@ export function useCreateModelState(props: Props) {
 
 			return {
 				modelStateId,
+				parameterSnapshot,
 				screenshot: modelStateImage,
 				modelViewUrl,
 				modelStateImageUrl:

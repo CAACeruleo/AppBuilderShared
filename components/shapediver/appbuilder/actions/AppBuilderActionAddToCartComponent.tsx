@@ -19,6 +19,8 @@ type Props = IAppBuilderLegacyActionPropsAddToCart & {
 // the unit-tested helpers in src/ceruleo/slicerBundleCommit.ts (which the shared
 // submodule cannot import from the parent app).
 type CeruleoCartData = IAddItemToCartData & {
+	commitId: string;
+	parameterSnapshot?: Record<string, unknown>;
 	appvExportUrls?: Record<string, string>;
 	dispatchHints?: {slicer?: boolean};
 };
@@ -60,7 +62,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		const api = await ECommerceApiSingleton;
 		const {
 			modelStateId,
-			screenshot,
+			parameterSnapshot,
 			modelViewUrl,
 			modelStateImageUrl,
 			modelStateGltfUrl,
@@ -106,12 +108,15 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		}
 
 		const cartData: CeruleoCartData = {
+			// New click = new intent; transport retries retain this payload ID.
+			commitId: crypto.randomUUID(),
 			modelStateId,
+			parameterSnapshot,
 			productId,
 			quantity,
 			price,
 			description,
-			imageUrl: screenshot,
+			imageUrl: modelStateImageUrl,
 			modelViewUrl,
 			modelStateImageUrl,
 			modelStateGltfUrl,
